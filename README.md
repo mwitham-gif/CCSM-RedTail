@@ -8,7 +8,7 @@ The site is designed for a QR-code journey: residents scan a flyer, search or ch
 
 Live site:
 
-https://mwitham-gif.github.io/CCSM-Westchester/
+https://mwitham-gif.github.io/CCSM-RedTail/
 
 ## Project Files
 
@@ -31,7 +31,7 @@ The app intentionally does not use a backend, build step, external font request,
 
 ## Privacy And Security Defaults
 
-- Google Analytics 4 (property `G-FT2K5G6SYR`, shared with the Santa Monica site; filter reports by page path `/CCSM-Westchester/` to separate them) records page views. It sets its
+- Google Analytics 4 (property `G-FT2K5G6SYR`, shared with the Santa Monica site; filter reports by page path `/CCSM-RedTail/` to separate them) records page views. It sets its
   own cookies and reports to Google. `analytics.js` also sends three custom
   events with `gtag()`: `resource_click` (call, website, email, and report
   links on a card), `filter_select` (support-area filter buttons), and
