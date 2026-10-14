@@ -5,7 +5,7 @@ const REPORT_EMAIL = 'help@communitycorp.org';
 
 // Paste the sheet's "Publish to web" CSV link here (File > Share > Publish to web > CSV).
 // Source sheet: owned by mwitham@communitycorp.org (see README, "The Google Sheet").
-const SHEET_URL = '';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgISKqF1ztIOSXmyotKl2yonfCOpx70_ZmLDFiIQj0NT_0UqWhCmC16vasoEbBZFR5hSplN0zd2AWp/pub?output=csv';
 const MAX_CSV_BYTES = 500000;
 
 // Recommended Google Sheet columns:
