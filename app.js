@@ -1065,7 +1065,9 @@ function parseCSV(text) {
   if (!rows.length) return [];
 
   const headers = rows[0].map(value => value.trim());
-  return rows.slice(1).map(values => {
+  const headerKey = headers.join('|').toLowerCase();
+  // Skip repeats of the header row, which File > Import > Append leaves in the sheet.
+  return rows.slice(1).filter(values => values.map(v => v.trim()).join('|').toLowerCase() !== headerKey).map(values => {
     const obj = {};
     headers.forEach((header, index) => {
       obj[header] = (values[index] || '').trim();
