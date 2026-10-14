@@ -50,7 +50,7 @@ const T = {
     loadErrorTitle: 'We are having trouble loading resources',
     loadErrorBody: 'Please check your connection and try again. If you need help now, call Resident Services.',
     retry: 'Try again',
-    siteTitle: 'Westchester Resource Guide',
+    siteTitle: 'Red Tail Crossing Resource Guide',
     siteSub: 'Food, rent, health care and more, close to home',
     footerTitle: 'Community Corporation of Santa Monica · Resident Services',
     footerContact: 'Need help using this directory? Call',
@@ -67,10 +67,10 @@ const T = {
     resourcesCopied: 'Resources copied',
     copyPrompt: 'Copy this link:',
     shareBack: 'Back to full directory',
-    shareEyebrow: 'Shared from the Westchester Resource Guide',
+    shareEyebrow: 'Shared from the Red Tail Crossing Resource Guide',
     shareHeading: 'A resource someone wanted to share with you',
     shareSubheading: 'Review the details below, then call, visit the website, or pass this resource along to someone else.',
-    shareMetaCommunity: 'Westchester resource guide',
+    shareMetaCommunity: 'Red Tail Crossing resource guide',
     shareMetaUpdated: 'Provider details may change',
     shareMissingTitle: 'This shared resource may have moved',
     shareMissingBody: 'The listing may have been renamed or removed. You can still search the full directory for current support options.',
@@ -79,7 +79,7 @@ const T = {
     reportBody: name =>
 `Hi CCSM,
 
-I noticed some information for "${name}" in the CCSM Westchester Resource Guide may be outdated.
+I noticed some information for "${name}" in the CCSM Red Tail Crossing Resource Guide may be outdated.
 
 𝗪𝗵𝗮𝘁 𝘀𝗵𝗼𝘂𝗹𝗱 𝗯𝗲 𝘂𝗽𝗱𝗮𝘁𝗲𝗱:
 
@@ -126,7 +126,7 @@ Thank you for keeping this resource up to date!`,
     loadErrorTitle: 'Tenemos problemas para cargar los recursos',
     loadErrorBody: 'Revise su conexión e inténtelo de nuevo. Si necesita ayuda ahora, llame a Servicios para Residentes.',
     retry: 'Intentar de nuevo',
-    siteTitle: 'Guía de Recursos de Westchester',
+    siteTitle: 'Guía de Recursos de Red Tail Crossing',
     siteSub: 'Comida, renta, salud y más, cerca de casa',
     footerTitle: 'Community Corporation of Santa Monica · Servicios para Residentes',
     footerContact: '¿Necesita ayuda para usar este directorio? Llame al',
@@ -143,10 +143,10 @@ Thank you for keeping this resource up to date!`,
     resourcesCopied: 'Recursos copiados',
     copyPrompt: 'Copie este enlace:',
     shareBack: 'Volver al directorio completo',
-    shareEyebrow: 'Compartido desde la Guía de Recursos de Westchester',
+    shareEyebrow: 'Compartido desde la Guía de Recursos de Red Tail Crossing',
     shareHeading: 'Un recurso que alguien quiso compartir con usted',
     shareSubheading: 'Revise los detalles abajo y luego llame, visite el sitio web o comparta este recurso con otra persona.',
-    shareMetaCommunity: 'Guía de recursos de Westchester',
+    shareMetaCommunity: 'Guía de recursos de Red Tail Crossing',
     shareMetaUpdated: 'Los detalles del proveedor pueden cambiar',
     shareMissingTitle: 'Este recurso compartido puede haber cambiado',
     shareMissingBody: 'Es posible que el listado haya cambiado de nombre o se haya eliminado. Todavía puede buscar en el directorio completo opciones de apoyo actuales.',
@@ -155,7 +155,7 @@ Thank you for keeping this resource up to date!`,
     reportBody: name =>
 `Hola,
 
-Noté que la información de "${name}" en la Guía de Recursos de Westchester de CCSM puede estar desactualizada.
+Noté que la información de "${name}" en la Guía de Recursos de Red Tail Crossing de CCSM puede estar desactualizada.
 
 𝗤𝘂é 𝗱𝗲𝗯𝗲 𝗮𝗰𝘁𝘂𝗮𝗹𝗶𝘇𝗮𝗿𝘀𝗲:
 

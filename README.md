@@ -1,6 +1,6 @@
-# Westchester Resource Guide
+# Red Tail Crossing Resource Guide
 
-Static, mobile-first community resource directory for Community Corporation of Santa Monica, serving residents around Redtail Crossing (8333 Airport Blvd, Westchester, CA 90045) and the surrounding Westchester, Playa del Rey, Inglewood and LAX-area neighborhoods.
+Static, mobile-first community resource directory for Community Corporation of Santa Monica, serving residents around Red Tail Crossing (8333 Airport Blvd, Westchester, CA 90045) and the surrounding Westchester, Playa del Rey, Inglewood and LAX-area neighborhoods.
 
 It is a copy of the Santa Monica Resource Guide (https://github.com/mwitham-gif/CCSM) with its own Google Sheet. Design and behavior are the same; only the place names, the sheet and the report-email inbox differ.
 
