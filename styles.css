@@ -6,6 +6,7 @@
     --ocean-deep: #003a73;
     --sun: #c97316;
     --sun-logo: #ffb81c; /* logo yellow: accents only, never behind text */
+    --redtail: #8e3128;  /* Red Tail Crossing lettering red: header only */
 
     /* Text: four levels, darkest to lightest. All pass WCAG AA (4.5:1) on
        white, the cream page and the pale card panels. */
@@ -49,7 +50,7 @@
     outline-offset: 3px;
   }
 
-  /* The blue ring would vanish on the blue header and footer. */
+  /* The blue ring would vanish on the red header and blue footer. */
   header :focus-visible,
   footer :focus-visible {
     outline-color: #ffffff;
@@ -85,14 +86,14 @@
 
   /* ── HEADER ── */
   header {
-    background: var(--ocean);
+    background: var(--redtail);
     color: white;
     padding: 0;
     position: sticky;
     top: 0;
     z-index: 100;
     border-bottom: 1px solid rgba(255,255,255,0.16);
-    box-shadow: 0 8px 18px rgba(0,58,115,0.18);
+    box-shadow: 0 8px 18px rgba(94,28,22,0.2);
   }
 
   .header-inner {
@@ -171,7 +172,7 @@
 
   .lang-toggle button.active {
     background: #ffffff;
-    color: var(--ocean);
+    color: var(--redtail);
   }
 
   /* ── SEARCH + FILTER ── */
