@@ -1725,3 +1725,84 @@
   @media print {
     .jump-filters { display: none; }
   }
+
+  /* ── PRINT OR SAVE AS PDF ──
+   * app.js fills #print-sheet and adds .printing-sheet to body before calling
+   * window.print(). Large type and plain black text so it reads well on paper
+   * and on cheap printers; a normal Ctrl+P (no class) prints the page as is. */
+  .print-sheet { display: none; }
+
+  @media print {
+    @page { margin: 0.6in; }
+
+    body.printing-sheet {
+      background: #fff;
+      min-height: 0;
+    }
+
+    body.printing-sheet > *:not(.print-sheet) { display: none !important; }
+
+    body.printing-sheet .print-sheet {
+      display: block;
+      color: #000;
+      font-size: 14pt;
+      line-height: 1.45;
+    }
+
+    .print-head {
+      border-bottom: 2pt solid #000;
+      padding-bottom: 10pt;
+      margin-bottom: 14pt;
+    }
+
+    .print-site {
+      font-size: 12pt;
+      font-weight: 600;
+    }
+
+    .print-head h1 {
+      font-family: inherit;
+      font-size: 24pt;
+      line-height: 1.2;
+      margin: 4pt 0 6pt;
+    }
+
+    .print-meta { font-size: 11pt; }
+
+    .print-item {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      padding: 10pt 0 12pt;
+      border-bottom: 1pt solid #888;
+    }
+
+    .print-item h2 {
+      font-size: 18pt;
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    .print-cat {
+      font-size: 11pt;
+      font-style: italic;
+      margin-bottom: 4pt;
+    }
+
+    .print-item p { margin: 4pt 0 6pt; }
+
+    .print-item dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 2pt 12pt;
+      margin: 0;
+    }
+
+    .print-item dt { font-weight: 700; }
+    .print-item dd { margin: 0; overflow-wrap: anywhere; }
+
+    .print-foot {
+      margin-top: 14pt;
+      font-size: 12pt;
+      font-weight: 600;
+    }
+  }

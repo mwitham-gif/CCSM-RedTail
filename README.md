@@ -19,6 +19,9 @@ https://mwitham-gif.github.io/CCSM-RedTail/
   Content Security Policy does not need to allow inline scripts
 - `ccsm_logo_web.png` - logo and social preview image
 - `favicon-32.png`, `apple-touch-icon.png` - browser tab and home-screen icons
+- `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` - lets phones add the guide to the home screen like an app
+- `sw.js` - service worker that saves the page and the sheet so the guide opens with no signal
+- `tools/link-checker.gs` - monthly broken-link email, run from the Google Sheet (see "Monthly link check")
 
 ## How It Works
 
@@ -28,6 +31,44 @@ https://mwitham-gif.github.io/CCSM-RedTail/
 4. GitHub Pages serves the static files from `main`.
 
 The app intentionally does not use a backend, build step, external font request, or client-side framework. The only third-party script is Google Analytics. Google Tag Manager was removed in October 2026: its three tags duplicated every link tap and leaked search text.
+
+## Features For Residents
+
+- **Search that understands everyday words.** "groceries", "eviction",
+  "can't pay my electric bill", "comida" or "médico" find the right support
+  area even when a listing never uses that word. Search ignores accents and
+  looks at English and Spanish text whichever language is showing. The word
+  lists are `SEARCH_CONCEPTS` near the top of `app.js`; to teach search a new
+  word, add it to the right category's line.
+- **Works offline and installs like an app.** After one visit, the guide
+  opens with no signal, showing the last list it saved and a note that
+  details may have changed. On Android, Chrome offers "Install app" or "Add
+  to Home screen"; on iPhone, use Share → Add to Home Screen. When online,
+  the newest page and sheet always load first.
+- **Print or save as PDF.** Every Share menu (one resource, or a whole
+  support area) has "Print or save as PDF". It prints a plain, large-type
+  list with phone numbers and web addresses written out, for residents
+  without a phone or for staff to hand out.
+- **Listings without hours** simply leave out the "When" line. Nothing is
+  guessed.
+
+## Monthly Link Check
+
+`tools/link-checker.gs` visits every website in the sheet on the 1st of each
+month and emails help@communitycorp.org a list of links that look broken,
+plus any sites that refused the automatic check and should be opened by hand.
+It runs inside Google, as the account that sets it up, and only reads the
+sheet. One-time setup (about five minutes):
+
+1. Open the resource Google Sheet. Choose **Extensions → Apps Script**.
+2. Delete the sample code, paste in the whole of `tools/link-checker.gs`, and
+   click **Save**.
+3. In the function menu at the top, choose `checkLinks` and click **Run**.
+   Google asks for permission to read the sheet, fetch web pages and send
+   email as you: approve it. A first report arrives at help@communitycorp.org
+   within a few minutes.
+4. Choose `scheduleMonthlyCheck` and click **Run** once. That schedules the
+   monthly check; there is nothing else to maintain.
 
 ## Privacy And Security Defaults
 

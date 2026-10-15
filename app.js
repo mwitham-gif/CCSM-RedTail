@@ -59,6 +59,13 @@ const T = {
     share: 'Share',
     shareEmail: 'Email',
     shareCopyLink: 'Copy link',
+    sharePrint: 'Print or save as PDF',
+    printedOn: date => `Printed ${date}`,
+    printPhone: 'Phone',
+    printWebsite: 'Website',
+    printCallFirst: 'Please call before visiting. Hours, services and eligibility can change.',
+    printHelp: 'Questions? Call Resident Services at (310) 395-0220.',
+    offlineNotice: 'You are offline. This is the list saved on this device, so some details may have changed since.',
     quickExit: 'Quick exit',
     jumpToFilters: 'Back to search and filters',
     quickExitHint: 'Leave this site now',
@@ -135,6 +142,13 @@ Thank you for keeping this resource up to date!`,
     share: 'Compartir',
     shareEmail: 'Correo',
     shareCopyLink: 'Copiar enlace',
+    sharePrint: 'Imprimir o guardar como PDF',
+    printedOn: date => `Impreso el ${date}`,
+    printPhone: 'Teléfono',
+    printWebsite: 'Sitio web',
+    printCallFirst: 'Llame antes de visitar. Los horarios, servicios y requisitos pueden cambiar.',
+    printHelp: '¿Preguntas? Llame a Servicios para Residentes al (310) 395-0220.',
+    offlineNotice: 'No tiene conexión. Esta es la lista guardada en este dispositivo, así que algunos detalles pueden haber cambiado.',
     quickExit: 'Salida rápida',
     jumpToFilters: 'Volver a búsqueda y filtros',
     quickExitHint: 'Salir de este sitio ahora',
@@ -444,10 +458,9 @@ function closeShareMenus() {
   document.querySelectorAll('.btn-share[aria-expanded="true"]').forEach(button => button.setAttribute('aria-expanded', 'false'));
 }
 
-function toggleShareMenu(idx, event) {
+function toggleShareMenu(idx, event, button) {
   event.stopPropagation();
   const menu = document.getElementById(`share-menu-${idx}`);
-  const button = event.currentTarget;
   if (!menu) return;
 
   const isOpen = menu.classList.contains('show');
@@ -586,6 +599,66 @@ async function copyCategoryResources() {
   window.prompt(T[lang].copyPrompt, getCategorySharePageUrl(activeCategory));
 }
 
+// Print or save as PDF. Builds a plain, large-type page in #print-sheet:
+// no buttons or colors, phone numbers and web addresses written out in full,
+// so it works on paper for someone without a phone. styles.css shows only
+// that sheet while body has .printing-sheet; a normal Ctrl+P is unaffected.
+function getPrintItemMarkup(resource) {
+  const cat = normalizeCategory(resource);
+  const website = normalizeWebsiteUrl(getField(resource, 'website'));
+  const rows = [
+    [T[lang].printPhone, getField(resource, 'phone')],
+    [T[lang].address, getField(resource, 'address')],
+    [T[lang].hours, getField(resource, 'hours')],
+    [T[lang].printWebsite, website.replace(/^https?:\/\//i, '').replace(/\/$/, '')],
+    [T[lang].notes, getLocalizedValue(resource, 'notes')],
+  ].filter(([, value]) => value);
+  const desc = getLocalizedValue(resource, 'description');
+
+  return `
+    <section class="print-item">
+      <h2>${escapeHTML(getLocalizedValue(resource, 'name'))}</h2>
+      <div class="print-cat">${escapeHTML(CAT_LABELS[lang][cat] || cat)}</div>
+      ${desc ? `<p>${escapeHTML(desc)}</p>` : ''}
+      <dl>${rows.map(([label, value]) => `<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd>`).join('')}</dl>
+    </section>`;
+}
+
+function printResources(list, heading) {
+  const sheet = document.getElementById('print-sheet');
+  if (!sheet || !list.length) return;
+  closeShareMenus();
+
+  const date = new Date().toLocaleDateString(lang === 'es' ? 'es-US' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const siteUrl = getBasePageUrl().replace(/^https?:\/\//, '');
+  sheet.innerHTML = `
+    <div class="print-head">
+      <div class="print-site">${escapeHTML(T[lang].siteTitle)}</div>
+      <h1>${escapeHTML(heading)}</h1>
+      <div class="print-meta">${escapeHTML(T[lang].printedOn(date))} · ${escapeHTML(siteUrl)}</div>
+      <div class="print-meta">${escapeHTML(T[lang].printCallFirst)}</div>
+    </div>
+    ${list.map(getPrintItemMarkup).join('')}
+    <div class="print-foot">${escapeHTML(T[lang].printHelp)}</div>`;
+
+  document.body.classList.add('printing-sheet');
+  window.print();
+}
+
+function printCategory() {
+  if (activeCategory === 'All') return;
+  const list = resources
+    .filter(resource => normalizeCategory(resource) === activeCategory)
+    .sort((a, b) => compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name')));
+  printResources(list, CAT_LABELS[lang][activeCategory] || activeCategory);
+}
+
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-sheet');
+  const sheet = document.getElementById('print-sheet');
+  if (sheet) sheet.innerHTML = '';
+});
+
 document.addEventListener('click', event => {
   const langButton = event.target.closest('[data-lang]');
   if (langButton) {
@@ -603,13 +676,20 @@ document.addEventListener('click', event => {
 
   const shareButton = event.target.closest('[data-share-menu]');
   if (shareButton) {
-    toggleShareMenu(shareButton.dataset.shareMenu, event);
+    toggleShareMenu(shareButton.dataset.shareMenu, event, shareButton);
     return;
   }
 
   const copyButton = event.target.closest('[data-copy-index]');
   if (copyButton) {
     copyResourceLink(Number(copyButton.dataset.copyIndex));
+    return;
+  }
+
+  const printButton = event.target.closest('[data-print-index]');
+  if (printButton) {
+    const resource = filtered_cache[Number(printButton.dataset.printIndex)];
+    if (resource) printResources([resource], getLocalizedValue(resource, 'name'));
     return;
   }
 
@@ -627,6 +707,7 @@ document.addEventListener('click', event => {
     if (action === 'clear-all') clearAllFilters();
     if (action === 'copy-category') copyCategoryLink();
     if (action === 'copy-category-all') copyCategoryResources();
+    if (action === 'print-category') printCategory();
     if (action === 'show-more') showMoreResults();
     if (action === 'retry-load') loadData();
     if (action === 'back-to-directory') window.location.href = getBasePageUrl();
@@ -849,6 +930,7 @@ function getCategoryShareMarkup() {
         <a class="share-option" href="${escapeAttr(shareEmailHref)}" target="_blank" rel="noopener">${escapeHTML(T[lang].shareEmail)}</a>
         <button class="share-option" type="button" data-action="copy-category-all">${escapeHTML(T[lang].shareCopyAll)}</button>
         <button class="share-option" type="button" data-action="copy-category">${escapeHTML(T[lang].shareCopyLink)}</button>
+        <button class="share-option" type="button" data-action="print-category">${escapeHTML(T[lang].sharePrint)}</button>
       </div>
     </div>
   `;
@@ -915,6 +997,7 @@ function renderResourceCard(resource, i, query = '') {
           <div class="share-menu" id="share-menu-${i}">
             <a class="share-option" href="${escapeAttr(shareEmailHref)}" target="_blank" rel="noopener">${escapeHTML(T[lang].shareEmail)}</a>
             <button class="share-option" type="button" data-copy-index="${i}">${escapeHTML(T[lang].shareCopyLink)}</button>
+            <button class="share-option" type="button" data-print-index="${i}">${escapeHTML(T[lang].sharePrint)}</button>
           </div>
         </div>
         <a class="btn-report" href="${escapeAttr(reportHref)}" target="_blank" rel="noopener" aria-label="${escapeAttr(`${T[lang].reportBtn}: ${name}`)}">${escapeHTML(T[lang].reportBtn)}</a>
@@ -1014,9 +1097,28 @@ async function loadData() {
     hasLoadError = false;
     updateStatusNotice(false);
     buildFilters(); renderCards();
+    updateOfflineNotice();
   } catch (e) {
     renderLoadError();
   }
+}
+
+// sw.js keeps the last copy of the page and the sheet, so the guide still
+// opens with no signal. Say so, since that copy may be out of date.
+function updateOfflineNotice() {
+  const notice = document.getElementById('offline-notice');
+  if (!notice) return;
+  notice.textContent = T[lang].offlineNotice;
+  notice.classList.toggle('show', !navigator.onLine && resources.length > 0 && !hasLoadError);
+}
+
+window.addEventListener('online', updateOfflineNotice);
+window.addEventListener('offline', updateOfflineNotice);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
 }
 
 function parseCSV(text) {
@@ -1161,31 +1263,110 @@ function compareText(a, b) {
   return String(a || '').localeCompare(String(b || ''), undefined, { sensitivity: 'base' });
 }
 
-function getSearchScore(resource, query) {
-  if (!query) return 0;
+// Everyday words residents type, mapped to the support area they mean, in
+// English and Spanish. A search for "groceries", "eviction" or "comida" then
+// finds the Food, Rental or Food listings even when the listing never uses
+// that word. Words are matched without accents, so "medico" finds "médico".
+// To teach search a new word, add it to the right line.
+const SEARCH_CONCEPTS = [
+  { category: 'Food', words: ['food', 'groceries', 'grocery', 'hungry', 'hunger', 'meal', 'meals', 'eat', 'eating', 'pantry', 'pantries', 'calfresh', 'ebt', 'snap', 'wic', 'lunch', 'dinner', 'breakfast', 'comida', 'comidas', 'alimento', 'alimentos', 'despensa', 'hambre', 'comer', 'mercado', 'almuerzo', 'cena', 'desayuno'] },
+  { category: 'Rental', words: ['rent', 'rental', 'evict', 'eviction', 'evicted', 'landlord', 'lease', 'deposit', 'back rent', 'tenant', 'tenants', 'renta', 'alquiler', 'desalojo', 'desalojar', 'casero', 'arrendador', 'inquilino', 'inquilinos', 'deposito'] },
+  { category: 'Housing', words: ['housing', 'homeless', 'homelessness', 'unhoused', 'shelter', 'apartment', 'section 8', 'voucher', 'motel', 'sleeping in car', 'vivienda', 'sin hogar', 'desamparado', 'refugio', 'apartamento', 'casa', 'albergue'] },
+  { category: 'Medical', words: ['doctor', 'doctors', 'clinic', 'sick', 'health', 'healthcare', 'dental', 'dentist', 'teeth', 'tooth', 'glasses', 'vision', 'eye', 'insurance', 'medi-cal', 'medical', 'medicaid', 'medicare', 'prescription', 'pharmacy', 'medicine', 'pregnant', 'pregnancy', 'prenatal', 'vaccine', 'shots', 'medico', 'clinica', 'enfermo', 'enferma', 'salud', 'dentista', 'dientes', 'lentes', 'seguro medico', 'medicina', 'farmacia', 'embarazada', 'embarazo', 'vacuna'] },
+  { category: 'Mental', words: ['mental', 'depression', 'depressed', 'anxiety', 'anxious', 'stress', 'stressed', 'therapy', 'therapist', 'counseling', 'counselor', 'counsellor', 'suicide', 'suicidal', 'crisis', 'addiction', 'drugs', 'alcohol', 'sober', 'recovery', 'grief', 'trauma', '988', 'lonely', 'depresion', 'ansiedad', 'estres', 'terapia', 'terapeuta', 'consejeria', 'consejero', 'suicidio', 'adiccion', 'drogas', 'duelo', 'soledad'] },
+  { category: 'Domestic Violence', words: ['abuse', 'abused', 'abusive', 'violence', 'violent', 'hit', 'hits', 'hurt', 'hurts', 'unsafe', 'afraid', 'scared', 'restraining order', 'stalking', 'stalker', 'dv', 'abuso', 'violencia', 'maltrato', 'golpe', 'golpea', 'miedo', 'peligro', 'orden de restriccion', 'acoso'] },
+  { category: 'Legal', words: ['lawyer', 'lawyers', 'attorney', 'court', 'legal', 'law', 'immigration', 'immigrant', 'deport', 'deportation', 'citizenship', 'daca', 'green card', 'ticket', 'record', 'expunge', 'expungement', 'rights', 'sued', 'lawsuit', 'abogado', 'abogada', 'corte', 'inmigracion', 'inmigrante', 'ciudadania', 'derechos', 'ley', 'demanda'] },
+  { category: 'Benefits', words: ['benefits', 'calfresh', 'medi-cal', 'ssi', 'ssdi', 'social security', 'cash aid', 'calworks', 'gr', 'general relief', 'utility', 'utilities', 'bill', 'bills', 'electric', 'electricity', 'gas bill', 'water bill', 'phone', 'internet', 'lifeline', 'taxes', 'tax', 'beneficios', 'seguro social', 'ayuda en efectivo', 'luz', 'factura', 'facturas', 'cuentas', 'impuestos', 'telefono'] },
+  { category: 'Employment', words: ['job', 'jobs', 'work', 'working', 'employment', 'resume', 'hire', 'hiring', 'career', 'unemployed', 'unemployment', 'edd', 'interview', 'training', 'trabajo', 'trabajar', 'empleo', 'curriculum', 'desempleo', 'entrevista', 'capacitacion'] },
+  { category: 'Education', words: ['school', 'class', 'classes', 'ged', 'diploma', 'college', 'esl', 'english', 'computer', 'computers', 'library', 'learn', 'reading', 'tutor', 'escuela', 'clase', 'clases', 'ingles', 'computadora', 'biblioteca', 'aprender', 'universidad'] },
+  { category: 'Childcare', words: ['childcare', 'child care', 'daycare', 'day care', 'preschool', 'babysitter', 'babysitting', 'baby', 'babies', 'toddler', 'diapers', 'guarderia', 'preescolar', 'cuidado infantil', 'bebe', 'bebes', 'panales'] },
+  { category: 'Youth', words: ['youth', 'teen', 'teens', 'teenager', 'kids', 'children', 'after school', 'afterschool', 'tutoring', 'summer camp', 'camp', 'sports', 'jovenes', 'joven', 'adolescente', 'adolescentes', 'ninos', 'hijos', 'tutoria', 'campamento', 'deportes'] },
+  { category: 'Seniors', words: ['senior', 'seniors', 'elderly', 'older', 'aging', 'retired', 'retiree', 'grandparent', 'adulto mayor', 'adultos mayores', 'mayores', 'anciano', 'ancianos', 'tercera edad', 'jubilado', 'abuelos'] },
+  { category: 'Disability', words: ['disability', 'disabilities', 'disabled', 'wheelchair', 'blind', 'deaf', 'hearing', 'ihss', 'caregiver', 'autism', 'discapacidad', 'discapacitado', 'silla de ruedas', 'ciego', 'sordo', 'cuidador', 'autismo'] },
+  { category: 'Transportation', words: ['bus', 'buses', 'ride', 'rides', 'transport', 'transportation', 'metro', 'tap card', 'car', 'gas', 'parking', 'access paratransit', 'dial-a-ride', 'autobus', 'camion', 'transporte', 'carro', 'coche', 'viaje', 'pasaje'] },
+];
 
-  const name = getLocalizedValue(resource, 'name').toLowerCase();
-  const desc = getLocalizedValue(resource, 'description').toLowerCase();
-  const address = getField(resource, 'address').toLowerCase();
-  const notes = getLocalizedValue(resource, 'notes').toLowerCase();
-  const categoryLabel = (CAT_LABELS[lang][normalizeCategory(resource)] || normalizeCategory(resource)).toLowerCase();
+// Filler words that say nothing about the need ("I need help with rent").
+const SEARCH_STOPWORDS = new Set([
+  'a', 'an', 'and', 'the', 'for', 'to', 'of', 'in', 'on', 'at', 'with', 'my', 'me', 'i', 'im', 'we', 'our', 'is', 'it', 'can', 'cant', 'cannot', 'need', 'needs', 'help', 'get', 'find', 'where', 'how', 'want', 'pay', 'free', 'near', 'some', 'do', 'dont', 'have', 'no', 'not',
+  'el', 'la', 'los', 'las', 'un', 'una', 'y', 'de', 'del', 'para', 'por', 'con', 'en', 'mi', 'mis', 'yo', 'necesito', 'ayuda', 'quiero', 'donde', 'como', 'que', 'puedo', 'pagar', 'gratis', 'cerca', 'tengo', 'hay',
+]);
+
+function foldText(value) {
+  return String(value || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+// One lowercase, accent-free string per listing, covering both languages, so
+// a Spanish word finds a listing while the page is in English and vice versa.
+const searchTextCache = new WeakMap();
+
+function getSearchText(resource) {
+  if (!searchTextCache.has(resource)) {
+    const cat = normalizeCategory(resource);
+    searchTextCache.set(resource, foldText([
+      'name', 'name_es', 'description', 'description_es', 'notes', 'notes_es', 'tags', 'tags_es', 'address',
+    ].map(key => getField(resource, key)).concat(CAT_LABELS.en[cat] || cat, CAT_LABELS.es[cat] || '').join(' \n ')));
+  }
+  return searchTextCache.get(resource);
+}
+
+function conceptWordMatches(word, token, phrase) {
+  if (word.includes(' ')) return phrase.includes(word);
+  if (token === word) return true;
+  // "evict" finds "eviction" and a half-typed "groc" finds "groceries".
+  if (token.length >= 4 && word.startsWith(token)) return true;
+  return word.length >= 4 && token.startsWith(word);
+}
+
+function parseSearchQuery(query) {
+  const phrase = foldText(query).trim().replace(/\s+/g, ' ');
+  const words = phrase.split(/[^a-z0-9]+/).filter(Boolean);
+  const tokens = words.filter(word => word.length >= 2 && !SEARCH_STOPWORDS.has(word));
+  const categories = new Set();
+  SEARCH_CONCEPTS.forEach(concept => {
+    if (concept.words.some(word => tokens.some(token => conceptWordMatches(word, token, phrase)))) {
+      categories.add(concept.category);
+    }
+  });
+  return { phrase, tokens, categories };
+}
+
+function getSearchScore(resource, search) {
+  if (!search || !search.phrase) return 0;
+  const { phrase, tokens, categories } = search;
+
+  const name = foldText(getField(resource, 'name')) + ' \n ' + foldText(getField(resource, 'name_es'));
+  const desc = foldText(getField(resource, 'description')) + ' \n ' + foldText(getField(resource, 'description_es'));
+  const text = getSearchText(resource);
+  const cat = normalizeCategory(resource);
 
   let score = 0;
 
-  if (name === query) score += 120;
-  else if (name.startsWith(query)) score += 90;
-  else if (name.includes(query)) score += 65;
+  // The whole search, as typed, still counts most.
+  if (name.split(' \n ').includes(phrase)) score += 120;
+  else if (name.startsWith(phrase)) score += 90;
+  else if (name.includes(phrase)) score += 65;
+  if (desc.includes(phrase)) score += 20;
+  if (text.includes(phrase)) score += 12;
 
-  if (categoryLabel.startsWith(query)) score += 48;
-  else if (categoryLabel.includes(query)) score += 34;
+  // Then each meaningful word on its own...
+  tokens.forEach(token => {
+    if (token.length < 3 && !/\d/.test(token)) return;
+    if (name.includes(token)) score += 14;
+    else if (text.includes(token)) score += 6;
+  });
 
-  if (desc.startsWith(query)) score += 24;
-  else if (desc.includes(query)) score += 16;
-
-  if (address.includes(query)) score += 10;
-  if (notes.includes(query)) score += 8;
+  // ...and the support area those words point to.
+  if (categories.has(cat)) score += 30;
 
   return score;
+}
+
+function getHighlightTerms(rawQuery) {
+  const trimmed = String(rawQuery || '').trim();
+  if (!trimmed) return [];
+  const words = trimmed.split(/\s+/).filter(word => word.length >= 3 && !SEARCH_STOPWORDS.has(foldText(word)));
+  return [trimmed, ...words];
 }
 
 function escapeHTML(value) {
@@ -1208,12 +1389,15 @@ function escapeRegExp(value) {
 
 function highlightMatch(value, query) {
   const text = String(value || '');
-  const trimmed = String(query || '').trim();
-  if (!trimmed) return escapeHTML(text);
+  const terms = (Array.isArray(query) ? query : [query])
+    .map(term => String(term || '').trim())
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+  if (!terms.length) return escapeHTML(text);
 
   // Match on the raw text and escape each piece, so a search like "amp" or
   // "lt" cannot land inside an HTML entity and garble the card.
-  const pattern = new RegExp(escapeRegExp(trimmed), 'ig');
+  const pattern = new RegExp(terms.map(escapeRegExp).join('|'), 'ig');
   let html = '';
   let last = 0;
   for (const match of text.matchAll(pattern)) {
@@ -1299,24 +1483,18 @@ function renderCards() {
 
   const rawQuery = getSearchQuery();
   const query = rawQuery.toLowerCase();
-  const grid  = document.getElementById('grid');
+  const search = query ? parseSearchQuery(rawQuery) : null;
+  const scores = new Map();
 
   const filtered = resources.filter(r => {
-    const cat = normalizeCategory(r);
-    const matchCat = activeCategory === 'All' || cat === activeCategory;
-    const name = getLocalizedValue(r, 'name').toLowerCase();
-    const desc = getLocalizedValue(r, 'description').toLowerCase();
-    const address = getField(r, 'address').toLowerCase();
-    const notes = getLocalizedValue(r, 'notes').toLowerCase();
-    const categoryLabel = (CAT_LABELS[lang][cat] || cat).toLowerCase();
-    const matchQ = !query || name.includes(query) || desc.includes(query) || address.includes(query) || notes.includes(query) || categoryLabel.includes(query);
-    return matchCat && matchQ;
+    const matchCat = activeCategory === 'All' || normalizeCategory(r) === activeCategory;
+    if (!matchCat) return false;
+    if (!search) return true;
+    const score = getSearchScore(r, search);
+    scores.set(r, score);
+    return score > 0;
   }).sort((a, b) => {
-    if (!query) {
-      return compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name'));
-    }
-
-    const scoreDiff = getSearchScore(b, query) - getSearchScore(a, query);
+    const scoreDiff = search ? scores.get(b) - scores.get(a) : 0;
     if (scoreDiff !== 0) return scoreDiff;
     return compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name'));
   });
@@ -1346,7 +1524,8 @@ function renderCards() {
   const moreMarkup = remaining > 0
     ? `<div class="load-more-wrap"><button class="load-more-btn" type="button" data-action="show-more">${escapeHTML(T[lang].showMoreResults(Math.min(remaining, RESULT_LIMIT_INCREMENT)))}</button></div>`
     : '';
-  updateGridMarkup(visible.map((r, i) => renderResourceCard(r, i, rawQuery)).join('') + moreMarkup);
+  const highlightTerms = getHighlightTerms(rawQuery);
+  updateGridMarkup(visible.map((r, i) => renderResourceCard(r, i, highlightTerms)).join('') + moreMarkup);
 }
 
 function showLoading() {
@@ -1386,6 +1565,7 @@ function setLang(l) {
   setText('footer-title', T[l].footerTitle);
   setHTML('footer-contact', `${escapeHTML(T[l].footerContact)} <a href="tel:+13103950220">(310) 395-0220</a>`);
   setText('footer-note', T[l].footerNote);
+  updateOfflineNotice();
   updateDirectoryUrl();
   if (hasLoadError) {
     renderLoadError();
