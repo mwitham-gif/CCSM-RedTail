@@ -122,9 +122,11 @@ Use these column headers in row 1:
 - `description`
 - `description_es`
 - `address`
+- `address_es`
 - `phone`
 - `website`
 - `hours`
+- `hours_es`
 - `notes`
 - `notes_es`
 - `tags`
@@ -163,7 +165,7 @@ The app normalizes close matches like `food pantry`, `mental health`, and `publi
 - Keep descriptions short and plain-language.
 - Use readable phone numbers like `(310) 555-1212`.
 - Use full website URLs when possible, like `https://example.org`.
-- Use Spanish columns only when Spanish text is available.
+- Use Spanish columns only when Spanish text is available. Leave `address_es` blank for a street address (it reads the same in both languages); fill it for places like "Online" or "Los Angeles County – phone only". Each Spanish column falls back to the English one when blank.
 - Use `tags` for short labels like `Walk-ins welcome`, `Appointment required`, `Westchester residents`, or `Families`.
 - Separate multiple tags with commas or vertical bars.
 - Leave fields blank if they do not apply.

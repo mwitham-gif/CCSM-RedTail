@@ -9,7 +9,7 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgISKqF1ztIO
 const MAX_CSV_BYTES = 500000;
 
 // Recommended Google Sheet columns:
-// name, name_es, category, description, description_es, address, phone, website, hours, notes, notes_es, tags, tags_es
+// name, name_es, category, description, description_es, address, address_es, phone, website, hours, hours_es, notes, notes_es, tags, tags_es
 // The importer also accepts several human-friendly variations like "Name", "Resource Name", or "Phone Number".
 
 const T = {
@@ -271,9 +271,11 @@ const FIELD_ALIASES = {
   description: ['description', 'service description', 'summary', 'details'],
   description_es: ['description_es', 'description es', 'service description es', 'descripcion', 'descripcion_es'],
   address: ['address', 'location', 'street address'],
+  address_es: ['address_es', 'address es', 'direccion', 'direccion_es', 'dirección'],
   phone: ['phone', 'phone number', 'telephone', 'contact phone'],
   website: ['website', 'web site', 'url', 'link'],
   hours: ['hours', 'service hours', 'open hours', 'availability'],
+  hours_es: ['hours_es', 'hours es', 'horario', 'horario_es', 'horarios'],
   notes: ['notes', 'note', 'eligibility', 'requirements', 'instructions'],
   notes_es: ['notes_es', 'notes es', 'eligibility es', 'requirements es', 'notas', 'notas_es'],
   tags: ['tags', 'tag', 'highlights', 'quick tags', 'quick_tag', 'quick tags'],
@@ -362,7 +364,7 @@ function getResourceShareData(resource) {
   const name = getLocalizedValue(resource, 'name');
   const description = getLocalizedValue(resource, 'description');
   const website = normalizeWebsiteUrl(getField(resource, 'website'));
-  const address = getField(resource, 'address');
+  const address = getLocalizedValue(resource, 'address');
   const phone = getField(resource, 'phone');
   const parts = [description, address, phone].filter(Boolean);
   const shareUrl = getSharePageUrl(resource);
@@ -379,7 +381,7 @@ function getResourceEmailLines(resource, includeShareUrl = true) {
   const website = normalizeWebsiteUrl(getField(resource, 'website'));
   const lines = [
     shareData.title,
-    getField(resource, 'address'),
+    getLocalizedValue(resource, 'address'),
     getField(resource, 'phone'),
     getLocalizedValue(resource, 'description'),
     website,
@@ -636,8 +638,8 @@ function getPrintItemMarkup(resource, { single = false } = {}) {
       <div class="ps-grid">
         ${getPrintField(T[lang].call, getField(resource, 'phone'), 'ps-call')}
         ${single ? getPrintField(T[lang].printWebsite, website, 'ps-web') : ''}
-        ${getPrintField(T[lang].addressLabel, getField(resource, 'address'))}
-        ${getPrintField(T[lang].hoursLabel, getField(resource, 'hours'))}
+        ${getPrintField(T[lang].addressLabel, getLocalizedValue(resource, 'address'))}
+        ${getPrintField(T[lang].hoursLabel, getLocalizedValue(resource, 'hours'))}
         ${single ? '' : getPrintField(T[lang].printWebsite, website, 'ps-web ps-wide')}
         ${getPrintField(T[lang].notesLabel, getLocalizedValue(resource, 'notes'), 'ps-wide')}
       </div>
@@ -1006,8 +1008,8 @@ function renderResourceCard(resource, i, query = '') {
   const rawPhone = getField(resource, 'phone');
   const phone = rawPhone.replace(/\D/g, '').length >= 3 ? rawPhone : '';
   const website = normalizeWebsiteUrl(getField(resource, 'website'));
-  const address = getField(resource, 'address');
-  const hours = getField(resource, 'hours');
+  const address = getLocalizedValue(resource, 'address');
+  const hours = getLocalizedValue(resource, 'hours');
   const categoryClass = getCategoryClass(cat);
   const reportHref = getReportHref(resource);
   const shareEmailHref = getShareEmailHref(resource);
@@ -1377,7 +1379,7 @@ function getSearchText(resource) {
   if (!searchTextCache.has(resource)) {
     const cat = normalizeCategory(resource);
     searchTextCache.set(resource, foldText([
-      'name', 'name_es', 'description', 'description_es', 'notes', 'notes_es', 'tags', 'tags_es', 'address',
+      'name', 'name_es', 'description', 'description_es', 'notes', 'notes_es', 'tags', 'tags_es', 'address', 'address_es',
     ].map(key => getField(resource, key)).concat(CAT_LABELS.en[cat] || cat, CAT_LABELS.es[cat] || '').join(' \n ')));
   }
   return searchTextCache.get(resource);
