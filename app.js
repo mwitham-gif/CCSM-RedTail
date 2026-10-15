@@ -69,6 +69,14 @@ const T = {
     printScanBody: 'Always up to date, in English and Spanish.',
     printCallFirst: 'Please call before visiting. Hours, services and eligibility can change.',
     printHelp: 'Questions? Resident Services: (310) 395-0220.',
+    safetyTitle: 'Browsing safely',
+    safetyTips: [
+      'If someone checks this phone or computer, they may be able to see the sites you visit.',
+      'A private or incognito window keeps this visit out of your history. You can also delete this site from your history afterwards.',
+      'A phone or computer at a library, at work, or at a friend\'s home is safer than a shared one.',
+      'Quick exit (bottom right) leaves this site at once and erases the copy saved on this device.',
+    ],
+    safetyUrgent: 'In danger right now? Call 911.',
     offlineNotice: 'You are offline. This is the list saved on this device, so some details may have changed since.',
     quickExit: 'Quick exit',
     jumpToFilters: 'Back to search and filters',
@@ -156,6 +164,14 @@ Thank you for keeping this resource up to date!`,
     printScanBody: 'Siempre actualizada, en inglés y español.',
     printCallFirst: 'Llame antes de visitar. Los horarios, servicios y requisitos pueden cambiar.',
     printHelp: '¿Preguntas? Servicios para Residentes: (310) 395-0220.',
+    safetyTitle: 'Navegar de forma segura',
+    safetyTips: [
+      'Si alguien revisa este teléfono o computadora, podría ver los sitios que usted visita.',
+      'Una ventana privada o de incógnito no guarda esta visita en su historial. También puede borrar este sitio de su historial después.',
+      'Un teléfono o computadora en una biblioteca, en el trabajo o en casa de una amistad es más seguro que uno compartido.',
+      'Salida rápida (abajo a la derecha) sale de este sitio de inmediato y borra la copia guardada en este dispositivo.',
+    ],
+    safetyUrgent: '¿Está en peligro ahora? Llame al 911.',
     offlineNotice: 'No tiene conexión. Esta es la lista guardada en este dispositivo, así que algunos detalles pueden haber cambiado.',
     quickExit: 'Salida rápida',
     jumpToFilters: 'Volver a búsqueda y filtros',
@@ -877,11 +893,37 @@ document.addEventListener('keydown', event => {
 // resources on a shared or monitored phone. No keyboard shortcut on purpose:
 // Esc already clears search and closes menus, so a double press would eject
 // people by accident.
+//
+// It also erases the copy of the guide that sw.js saves for offline use, so
+// the phone keeps no stored trace of the directory beyond normal history.
+// The page hides at once; the erase gets a moment to finish before leaving,
+// and leaving never waits longer than that.
 const QUICK_EXIT_URL = 'https://weather.com/';
+const QUICK_EXIT_CLEANUP_MS = 250;
+
+function eraseOfflineCopy() {
+  const jobs = [];
+  if (window.caches) {
+    jobs.push(caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key)))));
+  }
+  if (navigator.serviceWorker) {
+    jobs.push(navigator.serviceWorker.getRegistrations()
+      .then(registrations => Promise.all(registrations.map(registration => registration.unregister()))));
+  }
+  return Promise.all(jobs).catch(() => {});
+}
 
 function quickExit() {
   document.body.style.display = 'none';
-  window.location.replace(QUICK_EXIT_URL);
+  document.title = '';
+  let left = false;
+  const leave = () => {
+    if (left) return;
+    left = true;
+    window.location.replace(QUICK_EXIT_URL);
+  };
+  eraseOfflineCopy().then(leave);
+  window.setTimeout(leave, QUICK_EXIT_CLEANUP_MS);
 }
 
 document.getElementById('quick-exit')?.addEventListener('click', quickExit);
@@ -1560,6 +1602,21 @@ function updateQuickExit() {
     : !shareResourceKey && activeCategory === 'Domestic Violence';
   button.hidden = !onDvPage;
   document.body.classList.toggle('has-quick-exit', onDvPage);
+  updateSafetyTip(onDvPage);
+}
+
+// "Browsing safely" note, shown wherever Quick exit is: the Domestic
+// violence filter and shared domestic violence listings.
+function updateSafetyTip(show) {
+  const tip = document.getElementById('safety-tip');
+  if (!tip) return;
+  tip.hidden = !show;
+  if (!show) return;
+  tip.setAttribute('aria-label', T[lang].safetyTitle);
+  tip.innerHTML = `
+    <div class="safety-tip-title">${escapeHTML(T[lang].safetyTitle)}</div>
+    <ul>${T[lang].safetyTips.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+    <div class="safety-tip-urgent">${escapeHTML(T[lang].safetyUrgent)}</div>`;
 }
 
 function renderCards() {

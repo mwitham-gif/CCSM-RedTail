@@ -1557,6 +1557,51 @@
     .quick-exit:hover { transform: none; }
   }
 
+  /* Browsing safely: shown with Quick exit on domestic violence views. */
+  .safety-tip {
+    max-width: 868px;
+    margin: 0 auto 18px;
+    padding: 14px 18px;
+    border: 1px solid #e7c3d9;
+    border-left: 4px solid var(--c-DomesticViolence);
+    border-radius: 0 10px 10px 0;
+    background: #fdf6fa;
+    color: var(--text-body);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .safety-tip[hidden] { display: none; }
+
+  .safety-tip-title {
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .safety-tip ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  .safety-tip li + li { margin-top: 3px; }
+
+  .safety-tip-urgent {
+    margin-top: 8px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  @media (max-width: 920px) {
+    .safety-tip { margin-left: 16px; margin-right: 16px; }
+  }
+
+  body.share-mode .safety-tip { max-width: 648px; margin-top: 18px; }
+
+  @media print {
+    .safety-tip { display: none; }
+  }
+
   /* Keep the footer clear of the floating button. */
   body.has-quick-exit footer {
     padding-bottom: calc(28px + 72px);

@@ -70,6 +70,27 @@ sheet. One-time setup (about five minutes):
 4. Choose `scheduleMonthlyCheck` and click **Run** once. That schedules the
    monthly check; there is nothing else to maintain.
 
+## Safety Checks
+
+`tests/check.cjs` runs on GitHub after every push (the **Actions** tab, and a
+green check or red X next to each commit). It fails if a change:
+
+- weakens the Content Security Policy or adds inline scripts, inline styles
+  or event handlers to `index.html`;
+- lets text from the sheet run as code, or lets a website cell become a
+  `javascript:`, `data:` or other unsafe link (it loads a deliberately hostile
+  sheet, `tests/fixtures/hostile.csv`, to prove this);
+- breaks a privacy rule: shared resource names, sensitive searches, or
+  domestic violence clicks reaching Google Analytics;
+- breaks Quick exit, the Browsing safely note, search, Spanish, or printing.
+
+To run it on a computer: `npm install --no-save playwright@1.56.1`,
+`npx playwright install chromium`, then `node tests/check.cjs`.
+
+A red X does not stop a push from going live: GitHub Pages publishes `main`
+either way. To make it a gate, turn on a branch rule for `main` that requires
+the "Safety checks" status and work through pull requests.
+
 ## Privacy And Security Defaults
 
 - Google Analytics 4 (property `G-FT2K5G6SYR`, shared with the Santa Monica site; filter reports by page path `/CCSM-RedTail/` to separate them) records page views. It sets its
@@ -97,8 +118,10 @@ sheet. One-time setup (about five minutes):
 - No other third-party tracking, and no advertising tags.
 - On domestic violence views only (the Domestic violence filter, or a shared
   domestic violence resource), a Quick exit button stays on screen (bottom
-  right). It replaces the page in
-  history with weather.com, so Back does not return here. There is no
+  right), with a short "Browsing safely" note (private windows, clearing
+  history, safer devices, 911). Quick exit replaces the page in
+  history with weather.com, so Back does not return here, and erases the
+  offline copy of the guide that `sw.js` saved on the device. There is no
   keyboard shortcut on purpose: Esc already clears search and closes menus.
 - No external fonts.
 - Search terms are not stored in the URL after initial load.
