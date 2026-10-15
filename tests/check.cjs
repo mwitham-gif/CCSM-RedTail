@@ -81,6 +81,8 @@ function staticChecks() {
 
   const app = read('app.js');
   check('website links are limited to http and https', /function normalizeWebsiteUrl[\s\S]*?\^https\?:\\\/\\\//.test(app));
+  check('analytics reports to the Red Tail property only',
+    html.includes('gtag/js?id=G-S3BPY8ZED8') && /gtag\('config', 'G-S3BPY8ZED8'/.test(read('analytics.js')) && !/G-FT2K5G6SYR/.test(html + read('analytics.js')));
   check('report emails go to help@communitycorp.org', /const REPORT_EMAIL = 'help@communitycorp\.org';/.test(app));
 }
 

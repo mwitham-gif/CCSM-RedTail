@@ -1,4 +1,4 @@
-// Google Analytics 4 bootstrap for property G-FT2K5G6SYR.
+// Google Analytics 4 bootstrap for property G-S3BPY8ZED8.
 //
 // This lives in its own file rather than inline in index.html because the page
 // ships a Content-Security-Policy with `script-src 'self'`. An inline block
@@ -23,7 +23,7 @@ if (isSharePage) pageParams.set('share', '(withheld)');
 pageParams.delete('q');
 var pageQuery = pageParams.toString();
 
-gtag('config', 'G-FT2K5G6SYR', {
+gtag('config', 'G-S3BPY8ZED8', {
   page_location: window.location.origin + window.location.pathname + (pageQuery ? '?' + pageQuery : ''),
   page_title: isSharePage ? 'Shared resource' : document.title,
   // Visits are counted, never joined to Google accounts or used for ads.

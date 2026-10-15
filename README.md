@@ -93,7 +93,7 @@ the "Safety checks" status and work through pull requests.
 
 ## Privacy And Security Defaults
 
-- Google Analytics 4 (property `G-FT2K5G6SYR`, shared with the Santa Monica site; filter reports by page path `/CCSM-RedTail/` to separate them) records page views. It sets its
+- Google Analytics 4 (Red Tail's own property, measurement ID `G-S3BPY8ZED8`, separate from the Santa Monica site since October 2026; visits before the switch are in the Santa Monica property `G-FT2K5G6SYR` under page path `/CCSM-RedTail/`) records page views. It sets its
   own cookies and reports to Google. `analytics.js` also sends three custom
   events with `gtag()`: `resource_click` (call, website, email, and report
   links on a card), `filter_select` (support-area filter buttons), and
