@@ -175,6 +175,50 @@
     color: var(--redtail);
   }
 
+  .header-tools {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* A+ : same frosted pill as the language toggle. */
+  .text-size-btn {
+    min-height: 40px;
+    min-width: 44px;
+    margin-top: 2px;
+    padding: 0 12px;
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.13);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .text-size-plus {
+    font-size: 11px;
+    vertical-align: super;
+    margin-left: 1px;
+  }
+
+  .text-size-btn.active {
+    background: #ffffff;
+    color: var(--redtail);
+  }
+
+  /* Larger text: the whole page grows 20%, like a browser zoom. */
+  html.text-large body { zoom: 1.2; }
+
+  @media print {
+    html.text-large body { zoom: 1; }
+    .header-tools { display: none; }
+  }
+
   /* ── SEARCH + FILTER ── */
   .controls {
     max-width: 900px;
@@ -1312,6 +1356,11 @@
 
     .lang-toggle {
       margin-top: 0;
+    }
+
+    .text-size-btn {
+      margin-top: 0;
+      min-height: 44px;
     }
 
     .lang-toggle button {

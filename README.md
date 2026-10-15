@@ -51,6 +51,8 @@ The app intentionally does not use a backend, build step, external font request,
   without a phone or for staff to hand out.
 - **Listings without hours** simply leave out the "When" line. Nothing is
   guessed.
+- **Larger text.** The A+ button in the header makes the whole page 20%
+  bigger. The choice is remembered on that phone or computer.
 
 ## Monthly Link Check
 
@@ -97,7 +99,9 @@ the "Safety checks" status and work through pull requests.
   own cookies and reports to Google. `analytics.js` also sends three custom
   events with `gtag()`: `resource_click` (call, website, email, and report
   links on a card), `filter_select` (support-area filter buttons), and
-  `resource_search` (the search box, 1.5s after typing stops). Search terms
+  `resource_search` (the search box, 1.5s after typing stops, with
+  `result_count`), plus `search_no_results` when a search matched nothing,
+  which shows needs the directory does not cover yet. Search terms
   are sent to Google as typed, so anything a visitor enters there leaves the
   site, with these exceptions: clicks on a domestic violence resource send
   only the category (name and link are `(withheld)`); searches about abuse,
@@ -114,7 +118,7 @@ the "Safety checks" status and work through pull requests.
   built-in `click` event would record domestic violence websites' addresses.
 - To see the event parameters in reports, register them as event-scoped
   custom dimensions (Admin → Custom definitions): `resource_name`,
-  `resource_category`, `click_type`, `filter_name`, `search_term`.
+  `resource_category`, `click_type`, `filter_name`, `search_term`; and `result_count` as an event-scoped custom metric.
 - No other third-party tracking, and no advertising tags.
 - On domestic violence views only (the Domestic violence filter, or a shared
   domestic violence resource), a Quick exit button stays on screen (bottom

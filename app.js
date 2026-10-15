@@ -69,6 +69,8 @@ const T = {
     printScanBody: 'Always up to date, in English and Spanish.',
     printCallFirst: 'Please call before visiting. Hours, services and eligibility can change.',
     printHelp: 'Questions? Resident Services: (310) 395-0220.',
+    textLarger: 'Larger text',
+    textSmaller: 'Normal text size',
     safetyTitle: 'Browsing safely',
     safetyTips: [
       'If someone checks this phone or computer, they may be able to see the sites you visit.',
@@ -164,6 +166,8 @@ Thank you for keeping this resource up to date!`,
     printScanBody: 'Siempre actualizada, en inglés y español.',
     printCallFirst: 'Llame antes de visitar. Los horarios, servicios y requisitos pueden cambiar.',
     printHelp: '¿Preguntas? Servicios para Residentes: (310) 395-0220.',
+    textLarger: 'Letra más grande',
+    textSmaller: 'Tamaño de letra normal',
     safetyTitle: 'Navegar de forma segura',
     safetyTips: [
       'Si alguien revisa este teléfono o computadora, podría ver los sitios que usted visita.',
@@ -838,6 +842,33 @@ function updateJumpButton() {
   else if (delta <= -JUMP_SHOW_DELTA) setJumpVisible(true);
   else if (delta >= JUMP_SHOW_DELTA) setJumpVisible(false);
 }
+
+// Larger text (the A+ button in the header). Scales the whole page by 20%,
+// like a browser zoom, so every part grows together. The choice is
+// remembered on this device only; if storage is blocked it simply resets.
+const TEXT_SIZE_KEY = 'redtail-large-text';
+
+function setLargeText(on, { save = true } = {}) {
+  document.documentElement.classList.toggle('text-large', on);
+  const button = document.getElementById('btn-text-size');
+  if (button) {
+    button.classList.toggle('active', on);
+    button.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const label = on ? T[lang].textSmaller : T[lang].textLarger;
+    button.setAttribute('aria-label', label);
+    button.title = label;
+  }
+  if (save) {
+    try { window.localStorage.setItem(TEXT_SIZE_KEY, on ? '1' : '0'); } catch (error) { /* storage blocked */ }
+  }
+  updateHeaderHeight();
+}
+
+function isLargeText() {
+  return document.documentElement.classList.contains('text-large');
+}
+
+document.getElementById('btn-text-size')?.addEventListener('click', () => setLargeText(!isLargeText()));
 
 // The header is sticky, so the pill and the scroll target sit just below it.
 function updateHeaderHeight() {
@@ -1649,6 +1680,8 @@ function renderCards() {
   });
 
   filtered_cache = filtered;
+  // analytics.js reads this to count searches that found nothing.
+  document.getElementById('grid')?.setAttribute('data-result-count', String(filtered.length));
   updateJumpLabel(rawQuery, filtered.length);
   setText('results-info', query
     ? `${T[lang].showing(filtered.length)} · ${T[lang].bestMatches}`
@@ -1715,6 +1748,7 @@ function setLang(l) {
   setHTML('footer-contact', `${escapeHTML(T[l].footerContact)} <a href="tel:+13103950220">(310) 395-0220</a>`);
   setText('footer-note', T[l].footerNote);
   updateOfflineNotice();
+  setLargeText(isLargeText(), { save: false });
   updateDirectoryUrl();
   if (hasLoadError) {
     renderLoadError();
@@ -1733,6 +1767,10 @@ if (initialSearchQuery) {
 }
 
 document.getElementById('search')?.addEventListener('input', handleSearchInput);
+
+try {
+  if (window.localStorage.getItem(TEXT_SIZE_KEY) === '1') setLargeText(true, { save: false });
+} catch (error) { /* storage blocked: normal size */ }
 
 if (initialLang === 'es') setLang('es');
 

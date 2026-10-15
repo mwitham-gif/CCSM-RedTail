@@ -213,6 +213,14 @@ async function browserChecks() {
     }
     const sent = await searches('groceries');
     check('an ordinary search is still counted', sent[sent.length - 1] === 'groceries');
+    await searches('zzqxv nothing');
+    const empty = await second.page.evaluate(() => (window.dataLayer || []).map(entry => Array.from(entry))
+      .filter(entry => entry[0] === 'event' && entry[1] === 'search_no_results').map(entry => entry[2].search_term));
+    check('a search that finds nothing is reported as such', empty[empty.length - 1] === 'zzqxv nothing', `sent: ${empty.join(', ')}`);
+    await searches('asylum zzqxv');
+    const emptySensitive = await second.page.evaluate(() => (window.dataLayer || []).map(entry => Array.from(entry))
+      .filter(entry => entry[0] === 'event' && entry[1] === 'search_no_results').map(entry => entry[2].search_term));
+    check('a sensitive search that finds nothing is still withheld', emptySensitive[emptySensitive.length - 1] === '(withheld)');
 
     await second.page.fill('#search', '');
     await second.page.click('[data-category="Domestic Violence"]');
@@ -238,6 +246,10 @@ async function browserChecks() {
     await page.click('#btn-es');
     await page.waitForTimeout(200);
     check('Spanish view shows Spanish hours', /lun–vie/.test(await page.locator('#grid').innerText()));
+    await page.click('#btn-text-size');
+    check('A+ makes the text larger', await page.evaluate(() => document.documentElement.classList.contains('text-large')));
+    check('A+ never makes the page scroll sideways', await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
+    await page.click('#btn-text-size');
     await page.evaluate(() => { window.print = () => { window.__printed = true; }; });
     await page.click('[data-category="Food"]');
     await page.click('[data-share-menu="category"]');

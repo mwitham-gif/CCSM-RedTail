@@ -105,7 +105,14 @@ gtag('config', 'G-S3BPY8ZED8', {
       if (!term || term === lastSearchTerm) return;
       lastSearchTerm = term;
       if (SENSITIVE_SEARCH.test(term) || PERSONAL_DETAILS.test(term)) term = '(withheld)';
-      gtag('event', 'resource_search', { search_term: term });
+      // app.js records how many listings matched on #grid. A search that
+      // found nothing points to a need the directory does not cover yet.
+      var grid = document.getElementById('grid');
+      var count = grid ? Number(grid.getAttribute('data-result-count')) : NaN;
+      var params = { search_term: term };
+      if (!isNaN(count)) params.result_count = count;
+      gtag('event', 'resource_search', params);
+      if (count === 0) gtag('event', 'search_no_results', { search_term: term });
     }, SEARCH_DEBOUNCE_MS);
   });
 })();
