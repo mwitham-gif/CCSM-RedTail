@@ -63,8 +63,12 @@ const T = {
     printedOn: date => `Printed ${date}`,
     printPhone: 'Phone',
     printWebsite: 'Website',
+    printListEyebrow: 'Resource list',
+    printCount: n => `${n} resource${n===1?'':'s'}`,
+    printScanTitle: 'Scan for the full guide',
+    printScanBody: 'Always up to date, in English and Spanish.',
     printCallFirst: 'Please call before visiting. Hours, services and eligibility can change.',
-    printHelp: 'Questions? Call Resident Services at (310) 395-0220.',
+    printHelp: 'Questions? Resident Services: (310) 395-0220.',
     offlineNotice: 'You are offline. This is the list saved on this device, so some details may have changed since.',
     quickExit: 'Quick exit',
     jumpToFilters: 'Back to search and filters',
@@ -146,8 +150,12 @@ Thank you for keeping this resource up to date!`,
     printedOn: date => `Impreso el ${date}`,
     printPhone: 'Teléfono',
     printWebsite: 'Sitio web',
+    printListEyebrow: 'Lista de recursos',
+    printCount: n => `${n} recurso${n===1?'':'s'}`,
+    printScanTitle: 'Escanee para ver la guía completa',
+    printScanBody: 'Siempre actualizada, en inglés y español.',
     printCallFirst: 'Llame antes de visitar. Los horarios, servicios y requisitos pueden cambiar.',
-    printHelp: '¿Preguntas? Llame a Servicios para Residentes al (310) 395-0220.',
+    printHelp: '¿Preguntas? Servicios para Residentes: (310) 395-0220.',
     offlineNotice: 'No tiene conexión. Esta es la lista guardada en este dispositivo, así que algunos detalles pueden haber cambiado.',
     quickExit: 'Salida rápida',
     jumpToFilters: 'Volver a búsqueda y filtros',
@@ -599,50 +607,98 @@ async function copyCategoryResources() {
   window.prompt(T[lang].copyPrompt, getCategorySharePageUrl(activeCategory));
 }
 
-// Print or save as PDF. Builds a plain, large-type page in #print-sheet:
-// no buttons or colors, phone numbers and web addresses written out in full,
-// so it works on paper for someone without a phone. styles.css shows only
-// that sheet while body has .printing-sheet; a normal Ctrl+P is unaffected.
-function getPrintItemMarkup(resource) {
+// Print or save as PDF. Builds a branded, large-type page in #print-sheet:
+// phone numbers and web addresses written out in full and a QR code back to
+// the live guide, so it works on paper, in a PDF, or handed across a desk.
+// styles.css shows only that sheet while body has .printing-sheet; a normal
+// Ctrl+P is unaffected.
+const PRINT_QR_SRC = 'flyer/redtail-qr.svg';
+const PRINT_LOGO_SRC = 'ccsm_logo_web.png';
+
+// Fetch the QR code ahead of time so it is ready the moment Print is tapped.
+[PRINT_QR_SRC, PRINT_LOGO_SRC].forEach(src => { new Image().src = src; });
+
+function getPrintField(label, value, extraClass = '') {
+  if (!value) return '';
+  return `<div class="ps-field ${extraClass}"><span class="ps-label">${escapeHTML(label)}</span><span class="ps-value">${escapeHTML(value)}</span></div>`;
+}
+
+function getPrintItemMarkup(resource, { single = false } = {}) {
   const cat = normalizeCategory(resource);
-  const website = normalizeWebsiteUrl(getField(resource, 'website'));
-  const rows = [
-    [T[lang].printPhone, getField(resource, 'phone')],
-    [T[lang].address, getField(resource, 'address')],
-    [T[lang].hours, getField(resource, 'hours')],
-    [T[lang].printWebsite, website.replace(/^https?:\/\//i, '').replace(/\/$/, '')],
-    [T[lang].notes, getLocalizedValue(resource, 'notes')],
-  ].filter(([, value]) => value);
+  const website = normalizeWebsiteUrl(getField(resource, 'website'))
+    .replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
   const desc = getLocalizedValue(resource, 'description');
 
   return `
-    <section class="print-item">
-      <h2>${escapeHTML(getLocalizedValue(resource, 'name'))}</h2>
-      <div class="print-cat">${escapeHTML(CAT_LABELS[lang][cat] || cat)}</div>
-      ${desc ? `<p>${escapeHTML(desc)}</p>` : ''}
-      <dl>${rows.map(([label, value]) => `<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd>`).join('')}</dl>
+    <section class="ps-item pc-${escapeAttr(getCategoryClass(cat))}${single ? ' ps-single' : ''}">
+      ${single ? '' : `<h2>${escapeHTML(getLocalizedValue(resource, 'name'))}</h2>`}
+      ${desc && !single ? `<p class="ps-desc">${escapeHTML(desc)}</p>` : ''}
+      <div class="ps-grid">
+        ${getPrintField(T[lang].call, getField(resource, 'phone'), 'ps-call')}
+        ${single ? getPrintField(T[lang].printWebsite, website, 'ps-web') : ''}
+        ${getPrintField(T[lang].addressLabel, getField(resource, 'address'))}
+        ${getPrintField(T[lang].hoursLabel, getField(resource, 'hours'))}
+        ${single ? '' : getPrintField(T[lang].printWebsite, website, 'ps-web ps-wide')}
+        ${getPrintField(T[lang].notesLabel, getLocalizedValue(resource, 'notes'), 'ps-wide')}
+      </div>
     </section>`;
 }
 
-function printResources(list, heading) {
+async function printResources(list, { title, eyebrow, lede = '', single = false }) {
   const sheet = document.getElementById('print-sheet');
   if (!sheet || !list.length) return;
   closeShareMenus();
 
   const date = new Date().toLocaleDateString(lang === 'es' ? 'es-US' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const siteUrl = getBasePageUrl().replace(/^https?:\/\//, '');
+  const siteUrl = getBasePageUrl().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const meta = single ? T[lang].printedOn(date) : `${T[lang].printCount(list.length)} · ${T[lang].printedOn(date)}`;
+
   sheet.innerHTML = `
-    <div class="print-head">
-      <div class="print-site">${escapeHTML(T[lang].siteTitle)}</div>
-      <h1>${escapeHTML(heading)}</h1>
-      <div class="print-meta">${escapeHTML(T[lang].printedOn(date))} · ${escapeHTML(siteUrl)}</div>
-      <div class="print-meta">${escapeHTML(T[lang].printCallFirst)}</div>
+    <div class="ps-top">
+      <img class="ps-logo" src="${PRINT_LOGO_SRC}" alt="Community Corporation of Santa Monica">
+      <div class="ps-brand">
+        <div class="ps-brand-name">${escapeHTML(T[lang].siteTitle)}</div>
+        <div class="ps-brand-sub">${escapeHTML(T[lang].footerTitle)}</div>
+      </div>
     </div>
-    ${list.map(getPrintItemMarkup).join('')}
-    <div class="print-foot">${escapeHTML(T[lang].printHelp)}</div>`;
+    <div class="ps-title">
+      <div class="ps-eyebrow">${escapeHTML(eyebrow)}</div>
+      <h1>${escapeHTML(title)}</h1>
+      ${lede ? `<p class="ps-lede">${escapeHTML(lede)}</p>` : ''}
+      <div class="ps-meta">${escapeHTML(meta)}</div>
+    </div>
+    <div class="ps-list">
+      ${list.map(resource => getPrintItemMarkup(resource, { single })).join('')}
+    </div>
+    <div class="ps-foot">
+      <img class="ps-qr" src="${PRINT_QR_SRC}" alt="">
+      <div class="ps-foot-text">
+        <div class="ps-foot-title">${escapeHTML(T[lang].printScanTitle)}</div>
+        <div>${escapeHTML(T[lang].printScanBody)}</div>
+        <div class="ps-foot-url">${escapeHTML(siteUrl)}</div>
+        <div class="ps-foot-help">${escapeHTML(T[lang].printHelp)} ${escapeHTML(T[lang].printCallFirst)}</div>
+      </div>
+    </div>`;
+
+  // Wait (briefly) for the logo and QR code, or they can print blank.
+  const images = Array.from(sheet.querySelectorAll('img'));
+  await Promise.race([
+    Promise.all(images.map(img => (img.decode ? img.decode() : Promise.resolve()).catch(() => {}))),
+    new Promise(resolve => setTimeout(resolve, 1500)),
+  ]);
 
   document.body.classList.add('printing-sheet');
   window.print();
+}
+
+function printResource(resource) {
+  const cat = normalizeCategory(resource);
+  printResources([resource], {
+    single: true,
+    eyebrow: CAT_LABELS[lang][cat] || cat,
+    title: getLocalizedValue(resource, 'name'),
+    lede: getLocalizedValue(resource, 'description'),
+  });
 }
 
 function printCategory() {
@@ -651,7 +707,10 @@ function printCategory() {
   const list = resources
     .filter(resource => normalizeCategory(resource) === activeCategory)
     .sort((a, b) => getPinRank(b, pins) - getPinRank(a, pins) || compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name')));
-  printResources(list, CAT_LABELS[lang][activeCategory] || activeCategory);
+  printResources(list, {
+    eyebrow: T[lang].printListEyebrow,
+    title: CAT_LABELS[lang][activeCategory] || activeCategory,
+  });
 }
 
 window.addEventListener('afterprint', () => {
@@ -690,7 +749,7 @@ document.addEventListener('click', event => {
   const printButton = event.target.closest('[data-print-index]');
   if (printButton) {
     const resource = filtered_cache[Number(printButton.dataset.printIndex)];
-    if (resource) printResources([resource], getLocalizedValue(resource, 'name'));
+    if (resource) printResource(resource);
     return;
   }
 

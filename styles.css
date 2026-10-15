@@ -1728,12 +1728,13 @@
 
   /* ── PRINT OR SAVE AS PDF ──
    * app.js fills #print-sheet and adds .printing-sheet to body before calling
-   * window.print(). Large type and plain black text so it reads well on paper
-   * and on cheap printers; a normal Ctrl+P (no class) prints the page as is. */
+   * window.print(). Letter or A4, large type, brand red header rule, each
+   * listing marked with its category color, and a QR code back to the live
+   * guide. A normal Ctrl+P (no class) prints the page as is. */
   .print-sheet { display: none; }
 
   @media print {
-    @page { margin: 0.6in; }
+    @page { margin: 0.55in 0.6in; }
 
     body.printing-sheet {
       background: #fff;
@@ -1744,65 +1745,196 @@
 
     body.printing-sheet .print-sheet {
       display: block;
-      color: #000;
-      font-size: 14pt;
-      line-height: 1.45;
+      color: #1a2633;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.4;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
-    .print-head {
-      border-bottom: 2pt solid #000;
+    .ps-top {
+      display: flex;
+      align-items: center;
+      gap: 14pt;
       padding-bottom: 10pt;
-      margin-bottom: 14pt;
+      border-bottom: 3pt solid var(--redtail);
     }
 
-    .print-site {
-      font-size: 12pt;
-      font-weight: 600;
+    .ps-logo {
+      height: 44pt;
+      width: auto;
     }
 
-    .print-head h1 {
+    .ps-brand { margin-left: auto; text-align: right; }
+
+    .ps-brand-name {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--redtail);
+    }
+
+    .ps-brand-sub {
+      font-size: 9pt;
+      color: #526171;
+    }
+
+    .ps-title { padding: 18pt 0 12pt; }
+
+    .ps-eyebrow {
+      font-size: 9.5pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--redtail);
+    }
+
+    .ps-title h1 {
       font-family: inherit;
-      font-size: 24pt;
-      line-height: 1.2;
-      margin: 4pt 0 6pt;
+      font-size: 26pt;
+      line-height: 1.15;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      color: #17344f;
+      margin: 3pt 0 0;
     }
 
-    .print-meta { font-size: 11pt; }
+    .ps-lede {
+      font-size: 14pt;
+      line-height: 1.4;
+      color: #263748;
+      margin: 8pt 0 0;
+      max-width: 34em;
+    }
 
-    .print-item {
+    .ps-meta {
+      margin-top: 8pt;
+      font-size: 9.5pt;
+      color: #526171;
+    }
+
+    .ps-item {
+      --ps-cat: #8e3128;
       break-inside: avoid;
       page-break-inside: avoid;
-      padding: 10pt 0 12pt;
-      border-bottom: 1pt solid #888;
+      margin: 0 0 8pt;
+      padding: 9pt 12pt 10pt 14pt;
+      border: 0.75pt solid #d7e0e7;
+      border-left: 5pt solid var(--ps-cat);
+      border-radius: 6pt;
+      background: #fbfcfd;
     }
 
-    .print-item h2 {
-      font-size: 18pt;
+    .ps-item.pc-Food { --ps-cat: var(--c-Food); }
+    .ps-item.pc-Rental { --ps-cat: var(--c-Rental); }
+    .ps-item.pc-Housing { --ps-cat: var(--c-Housing); }
+    .ps-item.pc-Medical { --ps-cat: var(--c-Medical); }
+    .ps-item.pc-DomesticViolence { --ps-cat: var(--c-DomesticViolence); }
+    .ps-item.pc-Mental { --ps-cat: var(--c-Mental); }
+    .ps-item.pc-Benefits { --ps-cat: var(--c-Benefits); }
+    .ps-item.pc-Seniors { --ps-cat: var(--c-Seniors); }
+    .ps-item.pc-Disability { --ps-cat: var(--c-Disability); }
+    .ps-item.pc-Legal { --ps-cat: var(--c-Legal); }
+    .ps-item.pc-Childcare { --ps-cat: var(--c-Childcare); }
+    .ps-item.pc-Youth { --ps-cat: var(--c-Youth); }
+    .ps-item.pc-Employment { --ps-cat: var(--c-Employment); }
+    .ps-item.pc-Transportation { --ps-cat: var(--c-Transportation); }
+    .ps-item.pc-Education { --ps-cat: var(--c-Education); }
+    .ps-item.pc-Other { --ps-cat: var(--c-Other); }
+
+    .ps-item h2 {
+      font-size: 14pt;
       line-height: 1.25;
-      margin: 0;
+      font-weight: 700;
+      color: #17344f;
+      margin: 0 0 3pt;
     }
 
-    .print-cat {
-      font-size: 11pt;
-      font-style: italic;
-      margin-bottom: 4pt;
+    .ps-desc {
+      margin: 0 0 6pt;
+      color: #263748;
     }
 
-    .print-item p { margin: 4pt 0 6pt; }
-
-    .print-item dl {
+    .ps-grid {
       display: grid;
-      grid-template-columns: max-content 1fr;
-      gap: 2pt 12pt;
-      margin: 0;
+      grid-template-columns: 0.8fr 1.1fr 1.1fr;
+      gap: 5pt 16pt;
     }
 
-    .print-item dt { font-weight: 700; }
-    .print-item dd { margin: 0; overflow-wrap: anywhere; }
+    .ps-field { min-width: 0; }
+    .ps-wide { grid-column: 1 / -1; }
 
-    .print-foot {
-      margin-top: 14pt;
-      font-size: 12pt;
-      font-weight: 600;
+    .ps-label {
+      display: block;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #526171;
+    }
+
+    .ps-value {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .ps-call .ps-value {
+      font-size: 13.5pt;
+      white-space: nowrap;
+      font-weight: 700;
+      color: #17344f;
+    }
+
+    .ps-web .ps-value { font-weight: 600; }
+
+    /* One resource on its own page: roomier, bigger type. */
+    .ps-single {
+      padding: 16pt 18pt 18pt 20pt;
+      font-size: 13.5pt;
+    }
+
+    .ps-single .ps-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 14pt 24pt;
+    }
+    .ps-single .ps-call .ps-value { font-size: 20pt; }
+
+    .ps-foot {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      display: flex;
+      align-items: center;
+      gap: 16pt;
+      margin-top: 16pt;
+      padding: 12pt 14pt;
+      border-top: 3pt solid var(--redtail);
+      background: #fff7f5;
+      border-radius: 0 0 6pt 6pt;
+    }
+
+    .ps-qr {
+      width: 78pt;
+      height: 78pt;
+      flex: none;
+    }
+
+    .ps-foot-text { font-size: 10.5pt; color: #263748; }
+
+    .ps-foot-title {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--redtail);
+    }
+
+    .ps-foot-url {
+      font-weight: 700;
+      color: #17344f;
+      margin-top: 2pt;
+    }
+
+    .ps-foot-help {
+      margin-top: 5pt;
+      font-size: 9.5pt;
+      color: #526171;
     }
   }
