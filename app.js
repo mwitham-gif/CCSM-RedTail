@@ -647,9 +647,10 @@ function printResources(list, heading) {
 
 function printCategory() {
   if (activeCategory === 'All') return;
+  const pins = getCategoryPins(activeCategory);
   const list = resources
     .filter(resource => normalizeCategory(resource) === activeCategory)
-    .sort((a, b) => compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name')));
+    .sort((a, b) => getPinRank(b, pins) - getPinRank(a, pins) || compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name')));
   printResources(list, CAT_LABELS[lang][activeCategory] || activeCategory);
 }
 
@@ -1286,13 +1287,15 @@ const SEARCH_CONCEPTS = [
   { category: 'Transportation', words: ['bus', 'buses', 'ride', 'rides', 'transport', 'transportation', 'metro', 'tap card', 'car', 'gas', 'parking', 'access paratransit', 'dial-a-ride', 'autobus', 'camion', 'transporte', 'carro', 'coche', 'viaje', 'pasaje'] },
 ];
 
-// Listings that always come first when a search is about a certain need.
+// Listings that always come first when a search is about a certain need, and
+// at the top of their support area's list (the Food support button).
 // Matched by a piece of the listing's English name, so small edits to the
 // name in the sheet do not break it. CalFresh, EBT and WIC searches are left
 // out on purpose: those residents want the benefit itself, not a pantry.
 const SEARCH_PINS = [
   {
     name: 'pantry locator',
+    category: 'Food',
     words: ['food', 'foods', 'pantry', 'pantries', 'food bank', 'groceries', 'grocery', 'hungry', 'hunger', 'meal', 'meals', 'eat', 'comida', 'comidas', 'alimento', 'alimentos', 'despensa', 'despensas', 'banco de alimentos', 'hambre', 'comer', 'mercado'],
   },
 ];
@@ -1376,11 +1379,15 @@ function getSearchScore(resource, search) {
   return score;
 }
 
-function getPinRank(resource, search) {
-  if (!search.pinned.length) return 0;
+function getCategoryPins(category) {
+  return SEARCH_PINS.filter(pin => pin.category === category).map(pin => pin.name);
+}
+
+function getPinRank(resource, pinned) {
+  if (!pinned.length) return 0;
   const name = foldText(getField(resource, 'name'));
-  const index = search.pinned.findIndex(pin => name.includes(pin));
-  return index === -1 ? 0 : search.pinned.length - index;
+  const index = pinned.findIndex(pin => name.includes(pin));
+  return index === -1 ? 0 : pinned.length - index;
 }
 
 function getHighlightTerms(rawQuery) {
@@ -1505,6 +1512,7 @@ function renderCards() {
   const rawQuery = getSearchQuery();
   const query = rawQuery.toLowerCase();
   const search = query ? parseSearchQuery(rawQuery) : null;
+  const pinned = search ? search.pinned : getCategoryPins(activeCategory);
   const scores = new Map();
 
   const filtered = resources.filter(r => {
@@ -1513,9 +1521,9 @@ function renderCards() {
     if (!search) return true;
     const score = getSearchScore(r, search);
     scores.set(r, score);
-    return score > 0 || getPinRank(r, search) > 0;
+    return score > 0 || getPinRank(r, pinned) > 0;
   }).sort((a, b) => {
-    const pinDiff = search ? getPinRank(b, search) - getPinRank(a, search) : 0;
+    const pinDiff = getPinRank(b, pinned) - getPinRank(a, pinned);
     if (pinDiff !== 0) return pinDiff;
     const scoreDiff = search ? scores.get(b) - scores.get(a) : 0;
     if (scoreDiff !== 0) return scoreDiff;
