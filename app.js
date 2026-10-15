@@ -1211,9 +1211,17 @@ function highlightMatch(value, query) {
   const trimmed = String(query || '').trim();
   if (!trimmed) return escapeHTML(text);
 
-  const escapedText = escapeHTML(text);
-  const pattern = new RegExp(`(${escapeRegExp(escapeHTML(trimmed))})`, 'ig');
-  return escapedText.replace(pattern, '<mark class="match">$1</mark>');
+  // Match on the raw text and escape each piece, so a search like "amp" or
+  // "lt" cannot land inside an HTML entity and garble the card.
+  const pattern = new RegExp(escapeRegExp(trimmed), 'ig');
+  let html = '';
+  let last = 0;
+  for (const match of text.matchAll(pattern)) {
+    html += escapeHTML(text.slice(last, match.index));
+    html += `<mark class="match">${escapeHTML(match[0])}</mark>`;
+    last = match.index + match[0].length;
+  }
+  return html + escapeHTML(text.slice(last));
 }
 
 function normalizePhoneHref(phone) {
@@ -1325,8 +1333,8 @@ function renderCards() {
   if (!filtered.length) {
     updateGridMarkup(`<div class="empty">
       <div class="empty-icon">🔍</div>
-      <h3>${T[lang].noResults}</h3>
-      <p>${T[lang].noResultsSub}</p>
+      <h3>${escapeHTML(T[lang].noResults)}</h3>
+      <p>${escapeHTML(T[lang].noResultsSub)}</p>
       <button class="empty-action" type="button" data-action="clear-all">${escapeHTML(T[lang].noResultsReset)}</button>
     </div>`);
     return;
@@ -1343,7 +1351,7 @@ function renderCards() {
 
 function showLoading() {
   updateGridMarkup(`
-    <div class="loading"><div class="spinner"></div><div>${T[lang].loading}</div></div>`);
+    <div class="loading"><div class="spinner"></div><div>${escapeHTML(T[lang].loading)}</div></div>`);
 }
 
 function setLang(l) {

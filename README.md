@@ -37,10 +37,14 @@ The app intentionally does not use a backend, build step, external font request,
   links on a card), `filter_select` (support-area filter buttons), and
   `resource_search` (the search box, 1.5s after typing stops). Search terms
   are sent to Google as typed, so anything a visitor enters there leaves the
-  site. Two exceptions protect domestic violence survivors: clicks on a
-  domestic violence resource send only the category (name and link are
-  `(withheld)`), and searches containing abuse-related words send
-  `(withheld)` instead of the words typed. This is the one exception to the rules
+  site, with these exceptions: clicks on a domestic violence resource send
+  only the category (name and link are `(withheld)`); searches about abuse,
+  immigration status, self-harm, or sexual and reproductive health, and
+  searches containing an email address or a phone-length number, send
+  `(withheld)` instead of the words typed; and page views of a shared link
+  report `?share=(withheld)` with the title "Shared resource", so Google never
+  learns which resource was shared. Google signals and ad personalization are
+  turned off in the page code. This is the one exception to the rules
   below, and it is worth keeping in mind for an audience that reaches the site
   by scanning a flyer for housing, food, or legal help.
 - In GA4, turn off Enhanced measurement → Outbound clicks for this stream.
