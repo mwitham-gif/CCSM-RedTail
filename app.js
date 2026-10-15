@@ -1286,6 +1286,17 @@ const SEARCH_CONCEPTS = [
   { category: 'Transportation', words: ['bus', 'buses', 'ride', 'rides', 'transport', 'transportation', 'metro', 'tap card', 'car', 'gas', 'parking', 'access paratransit', 'dial-a-ride', 'autobus', 'camion', 'transporte', 'carro', 'coche', 'viaje', 'pasaje'] },
 ];
 
+// Listings that always come first when a search is about a certain need.
+// Matched by a piece of the listing's English name, so small edits to the
+// name in the sheet do not break it. CalFresh, EBT and WIC searches are left
+// out on purpose: those residents want the benefit itself, not a pantry.
+const SEARCH_PINS = [
+  {
+    name: 'pantry locator',
+    words: ['food', 'foods', 'pantry', 'pantries', 'food bank', 'groceries', 'grocery', 'hungry', 'hunger', 'meal', 'meals', 'eat', 'comida', 'comidas', 'alimento', 'alimentos', 'despensa', 'despensas', 'banco de alimentos', 'hambre', 'comer', 'mercado'],
+  },
+];
+
 // Filler words that say nothing about the need ("I need help with rent").
 const SEARCH_STOPWORDS = new Set([
   'a', 'an', 'and', 'the', 'for', 'to', 'of', 'in', 'on', 'at', 'with', 'my', 'me', 'i', 'im', 'we', 'our', 'is', 'it', 'can', 'cant', 'cannot', 'need', 'needs', 'help', 'get', 'find', 'where', 'how', 'want', 'pay', 'free', 'near', 'some', 'do', 'dont', 'have', 'no', 'not',
@@ -1328,7 +1339,10 @@ function parseSearchQuery(query) {
       categories.add(concept.category);
     }
   });
-  return { phrase, tokens, categories };
+  const pinned = SEARCH_PINS
+    .filter(pin => pin.words.some(word => tokens.some(token => conceptWordMatches(word, token, phrase))))
+    .map(pin => pin.name);
+  return { phrase, tokens, categories, pinned };
 }
 
 function getSearchScore(resource, search) {
@@ -1360,6 +1374,13 @@ function getSearchScore(resource, search) {
   if (categories.has(cat)) score += 30;
 
   return score;
+}
+
+function getPinRank(resource, search) {
+  if (!search.pinned.length) return 0;
+  const name = foldText(getField(resource, 'name'));
+  const index = search.pinned.findIndex(pin => name.includes(pin));
+  return index === -1 ? 0 : search.pinned.length - index;
 }
 
 function getHighlightTerms(rawQuery) {
@@ -1492,8 +1513,10 @@ function renderCards() {
     if (!search) return true;
     const score = getSearchScore(r, search);
     scores.set(r, score);
-    return score > 0;
+    return score > 0 || getPinRank(r, search) > 0;
   }).sort((a, b) => {
+    const pinDiff = search ? getPinRank(b, search) - getPinRank(a, search) : 0;
+    if (pinDiff !== 0) return pinDiff;
     const scoreDiff = search ? scores.get(b) - scores.get(a) : 0;
     if (scoreDiff !== 0) return scoreDiff;
     return compareText(getLocalizedValue(a, 'name'), getLocalizedValue(b, 'name'));
