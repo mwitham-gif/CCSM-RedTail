@@ -97,8 +97,9 @@ the "Safety checks" status and work through pull requests.
 
 - Google Analytics 4 (Red Tail's own property, measurement ID `G-S3BPY8ZED8`, separate from the Santa Monica site since October 2026; visits before the switch are in the Santa Monica property `G-FT2K5G6SYR` under page path `/CCSM-RedTail/`) records page views. It sets its
   own cookies and reports to Google. `analytics.js` also sends three custom
-  events with `gtag()`: `resource_click` (call, website, email, and report
-  links on a card), `filter_select` (support-area filter buttons), and
+  events with `gtag()`: `resource_click` (call, website, report and
+  share-by-email links on a card, and the Resident Services number in the
+  footer and the could-not-load notice), `filter_select` (support-area filter buttons), and
   `resource_search` (the search box, 1.5s after typing stops, with
   `result_count`), plus `search_no_results` when a search matched nothing,
   which shows needs the directory does not cover yet. Search terms
@@ -107,8 +108,8 @@ the "Safety checks" status and work through pull requests.
   immigration status, self-harm, or sexual and reproductive health, and
   searches containing an email address or a phone-length number, send
   `(withheld)` instead of the words typed; and page views of a shared link
-  report `?share=(withheld)` with the title "Shared resource", so Google never
-  learns which resource was shared. Google signals and ad personalization are
+  report `?share=(withheld)`, so Google never learns which resource was
+  shared. Google signals and ad personalization are
   turned off in the page code. This is the one exception to the rules
   below, and it is worth keeping in mind for an audience that reaches the site
   by scanning a flyer for housing, food, or legal help.
@@ -117,9 +118,19 @@ the "Safety checks" status and work through pull requests.
   GA4's Enhanced measurement → Outbound clicks may stay on (it records the
   address of every link to another site). This was a deliberate choice in
   October 2026 so staff can see which resources residents use.
+- Every `resource_click` carries `resource_name`, `resource_category`,
+  `click_type` (`call`, `website`, `email`, `report` or `share_email`) and
+  `link_url`. Name and category are the sheet's English name and category
+  key, read from `data-track-name` / `data-track-category` on the card, so a
+  listing is one row whether it was clicked in English, in Spanish or after
+  the browser translated the page. A link with no name sends `unknown`, and
+  its `link_url` shows where it came from.
+- The page title is fixed: `SITE_TITLE` in `analytics.js` sets
+  `document.title` and every event's `page_title`, so filters, search,
+  language and shared links all report one title.
 - To see the event parameters in reports, register them as event-scoped
   custom dimensions (Admin → Custom definitions): `resource_name`,
-  `resource_category`, `click_type`, `filter_name`, `search_term`; and `result_count` as an event-scoped custom metric.
+  `resource_category`, `click_type`, `link_url`, `filter_name`, `search_term`; and `result_count` as an event-scoped custom metric.
 - No other third-party tracking, and no advertising tags.
 - On domestic violence views only (the Domestic violence filter, or a shared
   domestic violence resource), a Quick exit button stays on screen (bottom

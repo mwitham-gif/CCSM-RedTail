@@ -3,6 +3,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 const REPORT_EMAIL = 'help@communitycorp.org';
 
+// The Resident Services number shown when the sheet cannot load, and in the
+// footer, is counted as a resource_click like any listing's Call button.
+const RESIDENT_SERVICES_TRACK = 'data-track-name="CCSM Resident Services" data-track-category="Resident Services"';
+
 // Paste the sheet's "Publish to web" CSV link here (File > Share > Publish to web > CSV).
 // Source sheet: owned by mwitham@communitycorp.org (see README, "The Google Sheet").
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgISKqF1ztIOSXmyotKl2yonfCOpx70_ZmLDFiIQj0NT_0UqWhCmC16vasoEbBZFR5hSplN0zd2AWp/pub?output=csv';
@@ -1105,9 +1109,12 @@ function renderResourceCard(resource, i, query = '') {
   const hasLongDesc = desc.length > 190;
   const hasLongNotes = notes.length > 120;
   const encodedName = encodeURIComponent(name);
+  // analytics.js reports clicks under the sheet's own name and category key,
+  // the same in English and Spanish.
+  const trackName = getField(resource, 'name');
 
   return `
-    <div class="card">
+    <div class="card" data-track-name="${escapeAttr(trackName)}" data-track-category="${escapeAttr(cat)}">
       <div class="card-header">
         <div class="card-icon icon-${escapeAttr(categoryClass)}">${getCategoryIcon(cat)}</div>
         <div class="card-title-block">
@@ -1163,8 +1170,9 @@ function renderSharePage() {
   if (resultsInfo) resultsInfo.textContent = '';
   if (resultsContext) resultsContext.innerHTML = '';
 
+  // The tab title stays the site's fixed title (set in analytics.js), so GA4
+  // reports one page title and never learns which resource was shared.
   if (!resource) {
-    document.title = `${T[lang].shareMissingTitle} · ${T[lang].siteTitle}`;
     updateGridMarkup(`<div class="empty">
       <div class="empty-icon">🔍</div>
       <h3>${escapeHTML(T[lang].shareMissingTitle)}</h3>
@@ -1174,7 +1182,6 @@ function renderSharePage() {
     return true;
   }
 
-  document.title = `${getLocalizedValue(resource, 'name')} · ${T[lang].siteTitle}`;
   const shareMeta = [
     T[lang].shareMetaCommunity,
     T[lang].shareMetaUpdated
@@ -1200,7 +1207,7 @@ function updateStatusNotice(show = false) {
   const notice = document.getElementById('status-notice');
   if (!notice) return;
 
-  notice.innerHTML = `<strong>${escapeHTML(T[lang].loadErrorNotice)}</strong> <a href="tel:+13103950220">(310) 395-0220</a>.`;
+  notice.innerHTML = `<strong>${escapeHTML(T[lang].loadErrorNotice)}</strong> <a href="tel:+13103950220" ${RESIDENT_SERVICES_TRACK}>(310) 395-0220</a>.`;
   notice.classList.toggle('show', show);
 }
 
@@ -1221,7 +1228,7 @@ function renderLoadError() {
     <div class="empty-icon">!</div>
     <h3>${escapeHTML(T[lang].loadErrorTitle)}</h3>
     <p>${escapeHTML(T[lang].loadErrorBody)}</p>
-    <a class="empty-action empty-link" href="tel:+13103950220">(310) 395-0220</a>
+    <a class="empty-action empty-link" href="tel:+13103950220" ${RESIDENT_SERVICES_TRACK}>(310) 395-0220</a>
     <button class="empty-action" type="button" data-action="retry-load">${escapeHTML(T[lang].retry)}</button>
   </div>`);
 }
@@ -1757,7 +1764,7 @@ function setLang(l) {
   updateStatusNotice(Boolean(notice && notice.classList.contains('show')));
 
   setText('footer-title', T[l].footerTitle);
-  setHTML('footer-contact', `${escapeHTML(T[l].footerContact)} <a href="tel:+13103950220">(310) 395-0220</a>`);
+  setHTML('footer-contact', `${escapeHTML(T[l].footerContact)} <a href="tel:+13103950220" ${RESIDENT_SERVICES_TRACK}>(310) 395-0220</a>`);
   setText('footer-note', T[l].footerNote);
   updateOfflineNotice();
   setLargeText(isLargeText(), { save: false });
