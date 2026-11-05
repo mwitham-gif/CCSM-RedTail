@@ -2048,3 +2048,74 @@
       color: #526171;
     }
   }
+
+  /* ── DIRECTORY REDESIGN ── */
+  :root {
+    --shadow-soft: 0 14px 32px rgba(23,52,79,0.08);
+    --shadow-card: 0 8px 22px rgba(23,52,79,0.07);
+    --shadow-card-hover: 0 16px 32px rgba(23,52,79,0.13);
+  }
+
+  body { background: linear-gradient(180deg, #f7fbff 0%, #f4f7fa 48%, #eef3f6 100%); }
+  header { background: linear-gradient(135deg, #9a3a30 0%, #76271f 100%); box-shadow: 0 10px 24px rgba(94,28,22,0.18); }
+  .header-inner { max-width: 1040px; padding: 18px 24px 17px; }
+  h1 { font-size: clamp(1.4rem, 4vw, 2.05rem); }
+
+  .controls { max-width: 1040px; margin-top: 20px; padding: 0 24px; }
+  .finder-card { border-color: #dce6ee; border-radius: 20px; padding: 22px; box-shadow: var(--shadow-soft); }
+  .finder-section + .finder-section { margin-top: 20px; }
+  .finder-hint { font-size: 13px; }
+  .intro-panel { max-width: 1040px; margin-top: 30px; padding: 0 24px; }
+  .intro-card { background: linear-gradient(135deg, #fff8e6 0%, #fffdf7 100%); border: 1px solid #f0dfb2; border-left: 1px solid #f0dfb2; border-radius: 20px; padding: 25px 28px 23px; box-shadow: 0 12px 28px rgba(130,88,19,0.07); position: relative; overflow: hidden; }
+  .intro-card::after { content: ""; position: absolute; width: 190px; height: 190px; right: -62px; top: -92px; border-radius: 50%; background: rgba(255,184,28,0.16); }
+  .intro-title { font-size: clamp(1.45rem, 4vw, 2rem); }
+
+  .search-wrap input { min-height: 60px; padding: 16px 90px 16px 52px; border: 2px solid #c7d6e2; border-radius: 14px; box-shadow: 0 3px 0 rgba(23,52,79,0.03); }
+  .search-wrap input:focus { box-shadow: 0 0 0 4px rgba(142,49,40,0.14), 0 3px 0 rgba(23,52,79,0.03); }
+  .filters { gap: 8px; }
+  .filter-btn { border-color: #d8e3eb; background: #f7fafc; border-radius: 999px; min-height: 38px; padding: 0 13px; font-size: 12px; }
+  .filter-btn:hover { background: #ffffff; }
+  .filter-btn.active { background: #f8e9e7; border-color: #d8a9a2; color: #76271f; box-shadow: inset 0 0 0 1px rgba(142,49,40,0.05); }
+  .filter-btn.active:hover { background: #f5ddda; border-color: #c98b82; color: #76271f; }
+  .filter-btn.active .chip-count { background: #eac7c2; color: #6d211b; }
+
+  .results-row, .results-context { max-width: 1040px; }
+  .results-row { margin-top: 28px; padding: 0 24px; }
+  .results-context { padding: 0 24px; }
+  .grid { max-width: 1040px; padding: 0 24px 70px; gap: 20px; }
+  .card { border-radius: 18px; border-color: #dce6ee; padding: 20px; gap: 16px; box-shadow: var(--shadow-card); }
+  .card-header { gap: 14px; padding-bottom: 14px; }
+  .card-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .card-name { font-size: 1.18rem; }
+  .card-category { margin-top: 8px; padding: 4px 9px 4px 7px; border-radius: 999px; }
+  .card-tag { border-radius: 999px; }
+  .card-desc { font-size: 14px; line-height: 1.62; }
+  .card-details { padding: 14px 13px 12px; border-radius: 13px; border-color: #e4edf3; }
+  .btn-call, .btn-web { border-radius: 12px; min-height: 48px; }
+  .btn-call { box-shadow: 0 3px 0 var(--ocean-deep), 0 8px 16px rgba(0,94,184,0.16); }
+  .btn-web { box-shadow: inset 0 0 0 1px #9fc1e1; }
+  footer { margin-top: 36px; }
+  .notice { max-width: 1040px; border-radius: 0 14px 14px 0; }
+
+  @media (max-width: 760px) { .grid { gap: 14px; } }
+  @media (max-width: 640px) {
+    body { background: linear-gradient(180deg, #fffaf1 0%, #f8fafc 38%, #edf3f7 100%); }
+    .header-inner { padding: 10px 14px; }
+    .controls { margin-top: 10px; padding: 0 12px; }
+    .finder-card { padding: 0; border-radius: 0; background: transparent; border: 0; box-shadow: none; }
+    .search-wrap input { min-height: 54px; padding: 15px 74px 15px 42px; border-radius: 8px; box-shadow: none; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; scroll-snap-type: x proximity; }
+    .filters::-webkit-scrollbar { display: none; }
+    .filter-btn { flex-shrink: 0; scroll-snap-align: start; min-height: 42px; }
+    .results-row { padding: 0 12px; margin-top: 10px; }
+    .results-context { padding: 0 12px; }
+    .grid { padding: 0 12px calc(68px + env(safe-area-inset-bottom)); gap: 14px; }
+  }
+  @media (max-width: 480px) {
+    .header-inner { padding: 12px 12px 11px; }
+    .controls { padding: 0 10px; }
+    .results-row { padding: 0 10px; margin-top: 14px; }
+    .results-context { padding: 0 10px; }
+    .grid { padding: 0 10px calc(68px + env(safe-area-inset-bottom)); gap: 11px; }
+    .card { padding: 16px 13px 14px; border-radius: 16px; }
+  }
