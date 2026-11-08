@@ -413,6 +413,8 @@
     color: white;
   }
 
+  .filter-btn .tile-icon, .filter-btn .tile-change { display: none; }
+
   .chip-count {
     display: inline-flex;
     align-items: center;
@@ -434,6 +436,24 @@
     color: #ffffff;
   }
 
+  /* Category colours for the service-area tiles (all screen sizes). */
+  .tile-Food { --tile-color: var(--c-Food); --tile-bg: #fde8e2; }
+  .tile-Mental { --tile-color: var(--c-Mental); --tile-bg: #ede7f6; }
+  .tile-Rental { --tile-color: var(--c-Rental); --tile-bg: #eaf4dc; }
+  .tile-Housing { --tile-color: var(--c-Housing); --tile-bg: #e3f5e6; }
+  .tile-Legal { --tile-color: var(--c-Legal); --tile-bg: #eceef0; }
+  .tile-Benefits { --tile-color: var(--c-Benefits); --tile-bg: #fef3c7; }
+  .tile-Transportation { --tile-color: var(--c-Transportation); --tile-bg: #dff6f2; }
+  .tile-Education { --tile-color: var(--c-Education); --tile-bg: #ddf3f7; }
+  .tile-Employment { --tile-color: var(--c-Employment); --tile-bg: #f3e9df; }
+  .tile-Childcare { --tile-color: var(--c-Childcare); --tile-bg: #fce4ec; }
+  .tile-Youth { --tile-color: var(--c-Youth); --tile-bg: #d8f7ed; }
+  .tile-Seniors { --tile-color: var(--c-Seniors); --tile-bg: #f4ece4; }
+  .tile-Disability { --tile-color: var(--c-Disability); --tile-bg: #f0e5ff; }
+  .tile-Medical { --tile-color: var(--c-Medical); --tile-bg: #fde3e6; }
+  .tile-DomesticViolence { --tile-color: var(--c-DomesticViolence); --tile-bg: #f7e3f0; }
+  .tile-Other { --tile-color: var(--c-Other); --tile-bg: #f3f4f6; }
+
   /* ── RESULTS INFO ── */
   .results-info {
     max-width: 900px;
@@ -444,6 +464,7 @@
   }
 
   .results-row {
+    scroll-margin-top: calc(var(--header-h, 0px) + 12px);
     max-width: 900px;
     margin: 24px auto 8px;
     padding: 0 16px;
@@ -555,6 +576,16 @@
     gap: 16px;
     transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
   }
+
+  /* The count line flashes when the list changes. */
+  .results-info.is-fresh { animation: results-fresh 0.9s ease-out; border-radius: 6px; }
+  @keyframes results-fresh {
+    from { background: #fff1bf; }
+    to { background: rgba(255,241,191,0); }
+  }
+
+  .empty-active { font-weight: 700; color: var(--text-body); }
+  .empty-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
   .grid.is-updating {
     opacity: 0.72;
@@ -1259,6 +1290,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (prefers-reduced-motion: reduce) {
+    .results-info.is-fresh { animation: none; }
     .filter-btn,
     .chip-count,
     .toast,
@@ -1309,7 +1341,6 @@
   }
 
   body.share-mode .controls,
-  body.share-mode .intro-panel,
   body.share-mode .results-row,
   body.share-mode .results-info,
   body.share-mode .results-context,
@@ -1462,30 +1493,6 @@
       min-height: 30px;
     }
 
-    .filters {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding-bottom: 2px;
-      scroll-snap-type: x proximity;
-      gap: 8px;
-    }
-
-    .filters::-webkit-scrollbar {
-      display: none;
-    }
-
-    .filter-btn {
-      flex-shrink: 0;
-      scroll-snap-align: start;
-    }
-
-    .filter-btn {
-      min-height: 42px;
-      padding: 0 14px;
-      font-size: 12px;
-    }
 
     .results-row {
       padding: 0 12px;
@@ -1501,6 +1508,126 @@
     }
   }
 
+  /* Service-area tiles: phones and tablets. */
+  @media (max-width: 1024px) {
+    /* Service areas as a tile grid: big tap targets, no sideways scrolling. */
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 2px 0 4px;
+    }
+
+    .filter-btn.cat-tile {
+      position: relative;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 92px;
+      padding: 12px 12px 11px;
+      border-radius: 14px;
+      border: 1.5px solid #d8e3eb;
+      background: #ffffff;
+      white-space: normal;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text-body);
+    }
+
+    .cat-tile:hover { transform: none; background: #ffffff; }
+    .cat-tile:active { transform: scale(0.97); }
+
+    .cat-tile .tile-icon {
+      display: inline-flex;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--tile-bg);
+      color: var(--tile-color);
+    }
+
+    .cat-tile .tile-label { display: block; padding-right: 4px; }
+
+    .cat-tile .chip-count {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #eef3f7;
+    }
+
+    .cat-tile.active {
+      border-color: var(--tile-color);
+      background: var(--tile-bg);
+      box-shadow: 0 0 0 1px var(--tile-color);
+      color: var(--text-body);
+    }
+    .cat-tile.active:hover { background: var(--tile-bg); border-color: var(--tile-color); }
+    .cat-tile.active .tile-icon { background: #ffffff; }
+    .cat-tile.active .chip-count { background: #ffffff; color: var(--text-body); }
+
+
+    /* After choosing an area, shrink to that one tile (tap to change). */
+    .filters.is-collapsed .cat-tile:not(.active) { display: none; }
+    .filters.is-collapsed .cat-tile.active {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      min-height: 64px;
+      padding: 10px 14px;
+    }
+    .filters.is-collapsed .cat-tile.active .tile-label { flex: 1; font-size: 15px; }
+    .filters.is-collapsed .cat-tile.active .chip-count { position: static; }
+    .filter-btn .tile-change {
+      display: inline;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--tile-color);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      padding: 6px 2px 6px 6px;
+    }
+  }
+
+  /* Two-column phones: the odd tile out fills the last row. */
+  @media (max-width: 640px) {
+    .filters:not(.is-collapsed) > .cat-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .filters { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .filter-btn.cat-tile { min-height: 104px; font-size: 15px; }
+  }
+
+/* Desktop: the same square-ish icon tiles as phones, five across. */
+@media (min-width: 1025px) {
+  .filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; padding: 2px 0 0; }
+  .filter-btn.cat-tile {
+    position: relative; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 10px;
+    min-height: 92px; padding: 12px 12px 11px; border-radius: 14px;
+    border: 1.5px solid #d8e3eb; background: #ffffff; white-space: normal; text-align: left;
+    font-size: 14px; font-weight: 700; line-height: 1.2; color: var(--text-body);
+  }
+  .filter-btn.cat-tile .tile-icon {
+    display: inline-flex; width: 38px; height: 38px; border-radius: 11px;
+    align-items: center; justify-content: center; background: var(--tile-bg); color: var(--tile-color);
+  }
+  .filter-btn.cat-tile .tile-label { display: block; padding-right: 4px; }
+  .filter-btn.cat-tile .chip-count { position: absolute; top: 12px; right: 12px; background: #eef3f7; }
+  .filter-btn.cat-tile:hover { background: #f7fafc; border-color: var(--tile-color); transform: none; }
+  .filter-btn.cat-tile:active { transform: scale(0.98); }
+  .filter-btn.cat-tile.active { border-color: var(--tile-color); background: var(--tile-bg); box-shadow: 0 0 0 1px var(--tile-color); color: var(--text-body); }
+  .filter-btn.cat-tile.active .tile-icon { background: #ffffff; }
+  .filter-btn.cat-tile.active .chip-count { background: #ffffff; color: var(--text-body); }
+}
+
   @media (max-width: 480px) {
     h1 { font-size: 1.04rem; max-width: 14ch; }
     .header-inner { padding: 12px 12px 11px; }
@@ -1512,7 +1639,6 @@
     .share-subheading { font-size: 13px; }
     .share-meta-pill { min-height: 28px; padding: 0 10px; font-size: 10px; }
     .search-wrap input { padding: 14px 68px 14px 39px; border-radius: 8px; }
-    .filter-btn { min-height: 44px; }
     .results-row { padding: 0 10px; margin-top: 14px; }
     .results-context { padding: 0 10px; }
     .grid { padding: 0 10px calc(68px + env(safe-area-inset-bottom)); gap: 11px; }
@@ -2119,3 +2245,33 @@
     .grid { padding: 0 10px calc(68px + env(safe-area-inset-bottom)); gap: 11px; }
     .card { padding: 16px 13px 14px; border-radius: 16px; }
   }
+
+/* ── COMPACT TOP: laptops and tablets (phones keep their own layout) ── */
+@media (min-width: 641px) {
+  .header-inner { padding: 12px 24px; }
+  .header-top { align-items: center; }
+  .header-brand { display: flex; align-items: center; gap: 18px; }
+  .header-logo { height: 46px; margin-bottom: 0; }
+  h1 { font-size: clamp(1.25rem, 2.6vw, 1.65rem); }
+  h1 .sub { white-space: nowrap; margin-top: 4px; font-size: 0.56em; }
+  .lang-toggle, .text-size-btn { margin-top: 0; }
+  .header-tools { align-items: center; }
+  .controls { margin-top: 18px; }
+  /* The example searches live in the placeholder; screen readers still get the hint. */
+  #finder-hint-search {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
+  .finder-head {
+    position: relative; overflow: hidden;
+    margin: -22px -22px 18px; padding: 16px 22px 15px;
+    background: linear-gradient(135deg, #fff8e6 0%, #fffdf7 100%);
+    border-bottom: 1px solid #f0dfb2; border-radius: 20px 20px 0 0;
+  }
+  .finder-head::after { content: ""; position: absolute; width: 150px; height: 150px; right: -48px; top: -78px; border-radius: 50%; background: rgba(255,184,28,0.16); }
+  .finder-title { position: relative; z-index: 1; font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(1.25rem, 3vw, 1.6rem); line-height: 1.15; color: var(--text); }
+  .results-row { margin-top: 20px; }
+}
+@media (max-width: 640px) {
+  .finder-head { display: none; }
+}
