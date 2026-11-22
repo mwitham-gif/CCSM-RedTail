@@ -62,6 +62,7 @@ const T = {
     retry: 'Try again',
     siteTitle: 'Red Tail Crossing Resource Guide',
     siteSub: 'Food, rent, health care and more, close to home',
+    backToTop: 'Back to top',
     footerTitle: 'Community Corporation of Santa Monica · Resident Services',
     footerContact: 'Need help using this directory? Email',
     callAhead: 'Hours and services can change. Call ahead to check.',
@@ -166,6 +167,7 @@ Thank you for keeping this resource up to date!`,
     retry: 'Intentar de nuevo',
     siteTitle: 'Guía de Recursos de Red Tail Crossing',
     siteSub: 'Comida, renta, salud y más, cerca de casa',
+    backToTop: 'Volver arriba',
     footerTitle: 'Community Corporation of Santa Monica · Servicios para Residentes',
     footerContact: '¿Necesita ayuda para usar este directorio? Escriba a',
     callAhead: 'Los horarios y servicios pueden cambiar. Llame antes de ir.',
@@ -1875,6 +1877,11 @@ function setLang(l) {
 
   setText('clear-search', T[l].clearSearch);
   setText('site-subtitle', T[l].siteSub);
+  const logoTop = document.getElementById('logo-top');
+  if (logoTop) {
+    logoTop.setAttribute('aria-label', T[l].backToTop);
+    logoTop.setAttribute('title', T[l].backToTop);
+  }
   setText('quick-exit-label', T[l].quickExit);
   document.getElementById('quick-exit')?.setAttribute('title', T[l].quickExitHint);
   setText('intro-title', T[l].introTitle);
@@ -1923,6 +1930,12 @@ function updateSearchPlaceholder() {
 
 updateSearchPlaceholder();
 wideScreenQuery.addEventListener('change', updateSearchPlaceholder);
+
+// The header logo is a button that scrolls back to the top of the page.
+document.getElementById('logo-top')?.addEventListener('click', () => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+});
 
 try {
   if (window.localStorage.getItem(TEXT_SIZE_KEY) === '1') setLargeText(true, { save: false });
