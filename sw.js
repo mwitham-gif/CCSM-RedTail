@@ -10,7 +10,7 @@
 // Google Analytics and everything else pass straight through, untouched.
 //
 // Bump CACHE when this file changes in a way that should drop old copies.
-const CACHE = 'redtail-v2';
+const CACHE = 'redtail-v3';
 const SHEET_KEY = 'sheet.csv';
 const SHEET_TIMEOUT_MS = 6000;
 const SCOPE_PATH = new URL('./', self.location).pathname;
